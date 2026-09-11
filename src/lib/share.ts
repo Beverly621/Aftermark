@@ -37,13 +37,18 @@ async function composeShareCard(result: RecordRenderResult): Promise<Blob> {
   ctx.font = "500 22px monospace";
   ctx.fillText("ONE OF ONE", 820, 120);
 
-  ctx.save();
-  ctx.translate(540, 730);
-  ctx.rotate(-0.035);
-  ctx.fillStyle = isAnalog ? "#6d563a" : isDream ? "#7d76a5" : "#262624";
-  ctx.fillRect(-355, -355, 710, 710);
-  ctx.restore();
-  await drawRecord(ctx, 540, 700, 345, result);
+  if (result.mainArtwork) {
+    const artwork = await loadImage(result.mainArtwork.dataUrl);
+    ctx.drawImage(artwork, 155, 285, 770, 770);
+  } else {
+    ctx.save();
+    ctx.translate(540, 730);
+    ctx.rotate(-0.035);
+    ctx.fillStyle = isAnalog ? "#6d563a" : isDream ? "#7d76a5" : "#262624";
+    ctx.fillRect(-355, -355, 710, 710);
+    ctx.restore();
+    await drawRecord(ctx, 540, 700, 345, result);
+  }
 
   ctx.fillStyle = isDream ? "#25233c" : "#f4f0e6";
   ctx.font = "500 22px monospace";

@@ -1,4 +1,5 @@
 import { ImagePalette } from "@/types/record";
+import { fallbackPalette } from "@/lib/palette-constants";
 
 export async function extractPalette(source: string): Promise<ImagePalette> {
   return new Promise((resolve) => {
@@ -21,16 +22,27 @@ export async function extractPalette(source: string): Promise<ImagePalette> {
         bucket.total += 1; bucket.r += r; bucket.g += g; bucket.b += b;
         buckets.set(key, bucket);
       }
-      const colors = [...buckets.values()].sort((a, b) => b.total - a.total).slice(0, 2).map((entry) => rgbToHex(entry.r / entry.total, entry.g / entry.total, entry.b / entry.total));
-      resolve({ primary: colors[0] ?? fallbackPalette.primary, secondary: colors[1] ?? fallbackPalette.secondary, neutral: "#f4f0e6", surprise: "#ff4f9a" });
+      const colors = [...buckets.values()]
+        .sort((a, b) => b.total - a.total)
+        .map((entry) => [entry.r / entry.total, entry.g / entry.total, entry.b / entry.total] as const);
+      const primary = colors[0];
+      const secondary = colors.find((candidate) => !primary || colorDistance(primary, candidate) >= 72) ?? colors[1];
+      resolve({
+        primary: primary ? rgbToHex(...primary) : fallbackPalette.primary,
+        secondary: secondary ? rgbToHex(...secondary) : fallbackPalette.secondary,
+        neutral: fallbackPalette.neutral,
+        surprise: fallbackPalette.surprise,
+      });
     };
     image.onerror = () => resolve(fallbackPalette);
     image.src = source;
   });
 }
 
-const fallbackPalette: ImagePalette = { primary: "#2bc4d9", secondary: "#ffd34e", neutral: "#f4f0e6", surprise: "#ff4f9a" };
-
 function rgbToHex(red: number, green: number, blue: number) {
   return `#${[red, green, blue].map((value) => Math.round(value).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function colorDistance(a: readonly number[], b: readonly number[]) {
+  return Math.sqrt(a.reduce((sum, value, index) => sum + (value - b[index]) ** 2, 0));
 }

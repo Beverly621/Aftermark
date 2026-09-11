@@ -5,7 +5,13 @@ export function ShareCard({ result }: { result: RecordRenderResult }) {
   return (
     <article className={`share-card share-${result.artDirection.stylePack}`} aria-label="9 by 16 share card preview">
       <div className="share-card-top"><span>YOUR RECORD</span><small>ONE OF ONE</small></div>
-      <div className="share-card-art"><div className="share-card-sleeve" /><RecordPreview artDirection={result.artDirection} size="share" /></div>
+      <div className={`share-card-art ${result.mainArtwork ? "has-main-artwork" : ""}`}>
+        {result.mainArtwork ? (
+          <img className="share-card-main-artwork" src={result.mainArtwork.dataUrl} alt="Your completed Aftermark record" />
+        ) : (
+          <><div className="share-card-sleeve" /><RecordPreview artDirection={result.artDirection} size="share" /></>
+        )}
+      </div>
       <div className="share-card-copy">
         <p>AFTERMARK PRESENTS</p>
         <h3>{result.recordType}</h3>

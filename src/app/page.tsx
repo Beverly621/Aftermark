@@ -7,7 +7,7 @@ import { RecordPreview } from "@/components/RecordPreview";
 import { ShareCard } from "@/components/ShareCard";
 import { CreationProvider, useCreation } from "@/context/CreationContext";
 import { extractPalette } from "@/lib/palette";
-import { mockRecordRenderer } from "@/lib/renderer";
+import { getRecordRenderer, RecordRenderError } from "@/lib/renderer";
 import { saveShareCard, shareRecord } from "@/lib/share";
 import { DoodleDensity, RecordMaterial, StylePack } from "@/types/record";
 
@@ -40,8 +40,8 @@ function Experience() {
   const [screen, setScreen] = useState<Screen>("landing");
   const [messageError, setMessageError] = useState("");
   const [shareStatus, setShareStatus] = useState("");
+  const [generationError, setGenerationError] = useState<RecordRenderError | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const materialRail = useRef<HTMLDivElement>(null);
 
   const stepIndex = Math.max(0, ["upload", "style", "density", "material", "message"].indexOf(screen));
   const go = (next: Screen) => setScreen(next);
@@ -70,15 +70,21 @@ function Experience() {
       return;
     }
     setMessageError("");
+    setGenerationError(null);
     go("making");
-    const result = await mockRecordRenderer.render(artDirection);
-    dispatch({ type: "SET_RESULT", result });
-    window.setTimeout(() => go("reveal"), 900);
+    try {
+      const result = await getRecordRenderer(artDirection).render(artDirection);
+      dispatch({ type: "SET_RESULT", result });
+      window.setTimeout(() => go("reveal"), 900);
+    } catch (error) {
+      setGenerationError(error instanceof RecordRenderError ? error : new RecordRenderError("GENERATION_FAILED", "The artwork could not be completed.", true));
+    }
   };
 
   const reset = () => {
     dispatch({ type: "RESET" });
     setShareStatus("");
+    setGenerationError(null);
     if (fileInput.current) fileInput.current.value = "";
     go("upload");
   };
@@ -102,23 +108,6 @@ function Experience() {
       if ((error as Error).name !== "AbortError") setShareStatus("COULDN’T SHARE. TRY SAVE INSTEAD.");
     }
   };
-
-  useEffect(() => {
-    if (screen !== "material") return;
-    const rail = materialRail.current;
-    if (!rail) return;
-    const onScroll = () => {
-      const cards = Array.from(rail.querySelectorAll<HTMLElement>("[data-material]"));
-      const center = rail.scrollLeft + rail.clientWidth / 2;
-      const closest = cards.reduce((best, card) => {
-        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-        return Math.abs(cardCenter - center) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - center) ? card : best;
-      }, cards[0]);
-      if (closest) dispatch({ type: "SET_MATERIAL", material: closest.dataset.material as RecordMaterial });
-    };
-    rail.addEventListener("scroll", onScroll, { passive: true });
-    return () => rail.removeEventListener("scroll", onScroll);
-  }, [screen, dispatch]);
 
   const currentDirection = artDirection;
   const header = screen !== "landing" && screen !== "making";
@@ -189,7 +178,7 @@ function Experience() {
         )}
 
         {screen === "density" && (
-          <motion.main key="density" className="screen decision-screen" {...screenMotion}>
+          <motion.main key="density" className="screen decision-screen density-screen" {...screenMotion}>
             <div className="screen-title compact">
               <p className="step-label">03 / ENERGY</p>
               <h2>HOW FAR<br />SHOULD WE TAKE IT?</h2>
@@ -214,7 +203,7 @@ function Experience() {
               <h2>PICK A SURFACE.</h2>
             </div>
             <div className="material-preview"><RecordPreview artDirection={currentDirection} size="material" /></div>
-            <div ref={materialRail} className="material-rail" role="radiogroup" aria-label="Record material">
+            <div className="material-rail" role="radiogroup" aria-label="Record material">
               {materialOptions.map((option) => (
                 <button
                   key={option.value}
@@ -222,17 +211,13 @@ function Experience() {
                   role="radio"
                   aria-checked={state.material === option.value}
                   className={`material-chip ${state.material === option.value ? "selected" : ""}`}
-                  onClick={(event) => {
-                    dispatch({ type: "SET_MATERIAL", material: option.value });
-                    event.currentTarget.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-                  }}
+                  onClick={() => dispatch({ type: "SET_MATERIAL", material: option.value })}
                 >
                   <span className={`material-swatch ${option.value}`} />
                   <strong>{option.title}</strong><small>{option.note}</small>
                 </button>
               ))}
             </div>
-            <p className="swipe-hint">← SWIPE TO FEEL THE DIFFERENCE →</p>
             <button className="primary-button footer-action" disabled={!state.choicesMade.material} onClick={() => go("message")}>LAST TOUCH <span>→</span></button>
           </motion.main>
         )}
@@ -261,20 +246,35 @@ function Experience() {
           </motion.main>
         )}
 
-        {screen === "making" && <Making key="making" artDirection={currentDirection} />}
+        {screen === "making" && (
+          <Making
+            key="making"
+            artDirection={currentDirection}
+            error={generationError}
+            onRetry={makeRecord}
+            onEdit={() => go(generationError?.code === "INVALID_IMAGE" ? "upload" : "message")}
+          />
+        )}
 
         {screen === "reveal" && state.result && (
           <motion.main key="reveal" className="screen reveal-screen" {...screenMotion}>
             <div className="reveal-title"><p>YOUR RECORD IS—</p><h2>{state.result.recordType}</h2></div>
             <div className="reveal-art">
-              <div className="reveal-sleeve"><span>AFTERMARK</span><small>{state.result.catalogNumber}</small></div>
-              <RecordPreview artDirection={state.result.artDirection} size="reveal" />
+              {state.result.mainArtwork ? (
+                <img className="main-artwork" src={state.result.mainArtwork.dataUrl} alt="Your completed one-of-one Aftermark record" />
+              ) : (
+                <>
+                  <div className="reveal-sleeve"><span>AFTERMARK</span><small>{state.result.catalogNumber}</small></div>
+                  <RecordPreview artDirection={state.result.artDirection} size="reveal" />
+                </>
+              )}
             </div>
             <div className="record-identity">
               <div><span>ONE OF ONE</span><strong>{state.result.catalogNumber}</strong></div>
               <div><span>MADE</span><strong>{formatDate(state.result.artDirection.date)}</strong></div>
             </div>
             {state.userMessage && <p className="reveal-message">“{state.userMessage}”</p>}
+            {state.result.renderMode === "development" && <p className="development-badge">DEVELOPMENT OUTER-ART ADAPTER</p>}
             <button className="primary-button footer-action" onClick={() => go("share")}>KEEP THIS <span>→</span></button>
           </motion.main>
         )}
@@ -296,7 +296,12 @@ function Experience() {
   );
 }
 
-function Making({ artDirection }: { artDirection: ReturnType<typeof useCreation>["artDirection"] }) {
+function Making({ artDirection, error, onRetry, onEdit }: {
+  artDirection: ReturnType<typeof useCreation>["artDirection"];
+  error: RecordRenderError | null;
+  onRetry: () => void;
+  onEdit: () => void;
+}) {
   const [line, setLine] = useState(0);
   const lines = ["Finding the right marks.", "Leaving a little chaos.", "Almost yours."];
   useEffect(() => {
@@ -307,8 +312,22 @@ function Making({ artDirection }: { artDirection: ReturnType<typeof useCreation>
     <motion.main className="screen making-screen" {...screenMotion}>
       <p className="eyebrow inverted">AFTERMARK · ONE OF ONE</p>
       <div className="making-art"><RecordPreview artDirection={artDirection} size="making" /></div>
-      <div className="making-copy"><h2>MAKING IT<br />YOURS.</h2><AnimatePresence mode="wait"><motion.p key={line} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{lines[line]}</motion.p></AnimatePresence></div>
-      <div className="making-marks" aria-hidden><i /><i /><i /><i /></div>
+      {error ? (
+        <div className="making-error" role="alert">
+          <p className="step-label">{error.code.replaceAll("_", " ")}</p>
+          <h2>THIS ONE<br />NEEDS ANOTHER GO.</h2>
+          <p>{error.message} Your choices are still here.</p>
+          <div>
+            {error.retryable && <button className="primary-button" onClick={onRetry}>TRY AGAIN <span>↻</span></button>}
+            <button className="outline-button" onClick={onEdit}>{error.code === "INVALID_IMAGE" ? "CHOOSE ANOTHER PHOTO" : error.code === "INVALID_MESSAGE" ? "EDIT MY MESSAGE" : "CHECK MY CHOICES"}</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="making-copy"><h2>MAKING IT<br />YOURS.</h2><AnimatePresence mode="wait"><motion.p key={line} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{lines[line]}</motion.p></AnimatePresence></div>
+          <div className="making-marks" aria-hidden><i /><i /><i /><i /></div>
+        </>
+      )}
     </motion.main>
   );
 }

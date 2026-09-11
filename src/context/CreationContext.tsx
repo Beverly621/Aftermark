@@ -2,6 +2,7 @@
 
 import { createContext, Dispatch, ReactNode, useContext, useMemo, useReducer } from "react";
 import { createCatalogNumber, todayIso } from "@/lib/catalog";
+import { validateUserMessage } from "@/lib/message-validation";
 import { DoodleDensity, ImagePalette, RecordArtDirection, RecordMaterial, RecordRenderResult, StylePack } from "@/types/record";
 
 interface CreationState {
@@ -45,15 +46,6 @@ function getInitialState(): CreationState {
   };
 }
 
-function countMessage(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return 0;
-  const cjk = trimmed.match(/[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/g)?.length ?? 0;
-  const latin = trimmed.replace(/[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/g, " ").trim();
-  const words = latin ? latin.split(/\s+/).length : 0;
-  return cjk + words;
-}
-
 function reducer(state: CreationState, action: Action): CreationState {
   switch (action.type) {
     case "SET_IMAGE": return { ...state, image: action.image, fileName: action.fileName };
@@ -62,8 +54,7 @@ function reducer(state: CreationState, action: Action): CreationState {
     case "SET_DENSITY": return { ...state, doodleDensity: action.doodleDensity, choicesMade: { ...state.choicesMade, density: true } };
     case "SET_MATERIAL": return { ...state, material: action.material, choicesMade: { ...state.choicesMade, material: true } };
     case "SET_MESSAGE": {
-      const count = countMessage(action.userMessage);
-      return { ...state, userMessage: action.userMessage, messageValidation: { count, valid: count <= 30 } };
+      return { ...state, userMessage: action.userMessage, messageValidation: validateUserMessage(action.userMessage) };
     }
     case "SET_RESULT": return { ...state, result: action.result };
     case "RESET": return getInitialState();
