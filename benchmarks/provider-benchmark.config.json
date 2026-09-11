@@ -1,0 +1,41 @@
+{
+  "version": "task-02-b01-v1",
+  "outputDirectory": "benchmarks/artifacts/task-02-b01",
+  "date": "2026-09-11",
+  "modes": ["text_led", "motif_led"],
+  "inputs": [
+    {
+      "id": "G01",
+      "label": "Day Landscape",
+      "sourcePath": "assets/benchmark-inputs/G01_DAY_LANDSCAPE_COAST.png",
+      "sha256": "2c412d974cc67eb4fffbd8799c4a9c2bc97abec4019510817c22bb06498b1e4e",
+      "palette": { "primary": "#2bc4d9", "secondary": "#e7cf9c", "neutral": "#f4f0e6", "surprise": "#ff4f9a" },
+      "motifs": ["wave", "cliff", "bird", "sun"],
+      "sceneSummary": "Daylight coastal landscape with open sky",
+      "userMessage": "summer never ended",
+      "aiPhrases": ["salt air", "late light"]
+    },
+    {
+      "id": "G02",
+      "label": "Single Portrait",
+      "sourcePath": "assets/benchmark-inputs/G02_PORTRAIT_CC0.jpg",
+      "sha256": "3bd51cd75d45eb1ef0179487544636a6d5638b22bb1e5e8c255b54282f43eb8f",
+      "palette": { "primary": "#bd705b", "secondary": "#597b83", "neutral": "#f4f0e6", "surprise": "#dfff36" },
+      "motifs": ["star", "window", "flower", "motion"],
+      "sceneSummary": "Ordinary phone portrait",
+      "userMessage": "summer never ended",
+      "aiPhrases": ["good days", "still here"]
+    },
+    {
+      "id": "G06",
+      "label": "Night Low Saturation",
+      "sourcePath": "assets/benchmark-inputs/G06_NIGHT_LOW_SATURATION_CC0.jpg",
+      "sha256": "cbdeb205b5265c3309b4a4e16bc4305906b22791226b1d4f51045cc23e545336",
+      "palette": { "primary": "#596378", "secondary": "#89919b", "neutral": "#f4f0e6", "surprise": "#ff6b35" },
+      "motifs": ["moon", "streetlight", "window", "cloud"],
+      "sceneSummary": "Dark low-saturation night scene",
+      "userMessage": "summer never ended",
+      "aiPhrases": ["night signal", "after light"]
+    }
+  ]
+}

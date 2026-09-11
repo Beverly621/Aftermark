@@ -1,6 +1,7 @@
 export type StylePack = "neon_scribble" | "analog_memory" | "dream_archive";
 export type DoodleDensity = "low" | "medium" | "high";
 export type RecordMaterial = "classic" | "clear" | "smoke" | "aurora" | "pearl";
+export type CompositionMode = "text_led" | "motif_led";
 
 export interface ImagePalette {
   primary: string;
@@ -13,6 +14,7 @@ export interface RecordArtDirection {
   image: string;
   stylePack: StylePack;
   doodleDensity: DoodleDensity;
+  compositionMode: CompositionMode;
   material: RecordMaterial;
   userMessage?: string;
   date: string;
@@ -30,6 +32,13 @@ export interface RecordRenderResult {
   renderPlan?: NeonScribbleRenderPlan;
   renderMode?: "mock" | "development" | "production";
   sourceImageSha256?: string;
+  providerDiagnostics?: {
+    providerId: string;
+    modelId: string;
+    latencyMs: number;
+    costUsd?: number;
+    costKind?: "actual" | "estimate" | "unavailable";
+  };
 }
 
 export interface RecordRenderer {
@@ -61,10 +70,11 @@ export interface SourceImageAnalyzer {
 }
 
 export interface NeonScribbleRenderPlan {
-  version: "neon-scribble-v1";
+  version: "neon-scribble-v2";
   palette: ImagePalette;
   density: "medium";
   material: "classic";
+  compositionMode: CompositionMode;
   motifs: string[];
   userMessage?: string;
   aiPhrases: string[];
@@ -73,6 +83,11 @@ export interface NeonScribbleRenderPlan {
     preserveGrooves: true;
     maxLargeMotifs: 1;
     centerProtection: "composite-source-last";
+    heroLetteringZone: {
+      reserved: boolean;
+      placement: "lower-right-arc";
+      applicationOwnedText: true;
+    };
   };
   prompt: string;
   negativePrompt: string;

@@ -1,0 +1,34 @@
+{
+  "G02": {
+    "filename": "G02_PORTRAIT_CC0.jpg",
+    "role": "Single-person / casual portrait benchmark",
+    "title": "Texting Woman Phone",
+    "creator": "Kristin Hardwick",
+    "license": "CC0 1.0",
+    "source_page": "https://negativespace.co/texting-woman-phone/",
+    "direct_image": "https://negativespace.co/wp-content/uploads/2022/05/negative-space-woman-smartphone-communication.jpg",
+    "why_fixed": [
+      "single real person",
+      "casual everyday context rather than polished editorial portrait",
+      "face, clothing and background provide a useful source palette",
+      "off-center framing tests the center-label crop logic",
+      "CC0 allows bundling/committing the frozen benchmark asset after download"
+    ]
+  },
+  "G06": {
+    "filename": "G06_NIGHT_LOW_SATURATION_CC0.jpg",
+    "role": "Night / low-saturation benchmark",
+    "title": "Street at night, black and white",
+    "creator": "www.Pixel.la Free Stock Photos",
+    "license": "CC0 1.0",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Street_at_night,_black_and_white.jpg",
+    "direct_image": "https://upload.wikimedia.org/wikipedia/commons/9/92/Street_at_night%2C_black_and_white.jpg",
+    "why_fixed": [
+      "true night scene",
+      "black-and-white / low-saturation input",
+      "forces the palette system to create controlled color without relying on a colorful source",
+      "tests surprise-accent logic and acrylic visibility on dark vinyl",
+      "CC0 allows bundling/committing the frozen benchmark asset after download"
+    ]
+  }
+}

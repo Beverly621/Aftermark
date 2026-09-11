@@ -157,6 +157,17 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px
 .density-line { grid-row: 1 / 3; align-self: center; width: 26px; height: 26px; border: 3px solid var(--ink); border-radius: 46% 54% 59% 41%; }
 .density-line[data-density="medium"] { box-shadow: 5px 3px 0 var(--signal); }.density-line[data-density="high"] { box-shadow: 5px 3px 0 var(--signal), -4px -3px 0 #2bc4d9; }
 
+/* Composition mode */
+.composition-screen .screen-title > p:last-child { margin-top: 12px; }
+.composition-options { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 34px 0 14px; }
+.composition-options button { position: relative; min-height: 132px; padding: 18px 44px 18px 18px; border: 1px solid var(--line); background: #ede8dc; display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 18px; text-align: left; cursor: pointer; }
+.composition-options button.selected { border-color: var(--ink); background: var(--acid); box-shadow: 5px 5px 0 var(--ink); transform: translate(-2px, -2px); }
+.composition-options button > span:nth-child(2) { display: flex; flex-direction: column; gap: 8px; }
+.composition-options strong { font-size: 17px; letter-spacing: -.02em; }
+.composition-options small { color: #646158; font: 10px/1.35 monospace; }
+.composition-mark { width: 66px; height: 66px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 50%; font: italic 800 27px/1 Georgia, serif; transform: rotate(-7deg); }
+.composition-options button:nth-child(2) .composition-mark { background: var(--signal); font-style: normal; transform: rotate(8deg); }
+
 /* Material */
 .material-screen { padding-left: 0; padding-right: 0; }.material-screen .screen-title { padding: 0 24px; }
 .material-preview { width: min(54vw, 230px); margin: 14px auto 6px; filter: drop-shadow(0 18px 24px rgba(0,0,0,.3)); }
@@ -222,6 +233,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px
   .upload-stage { width: 218px; margin-top: 7px; }
   .style-grid { gap: 5px; margin: 9px 0 7px; }.style-card { min-height: 85px; grid-template-columns: 66px 1fr; }.style-art { width: 62px; height: 62px; }
   .density-screen .screen-title h2 { font-size: 30px; }.density-stage { width: 164px; right: -12px; top: 150px; }.density-options { gap: 5px; }.density-options button { min-height: 50px; }
+  .composition-options { margin-top: 18px; gap: 8px; }.composition-options button { min-height: 101px; padding-top: 12px; padding-bottom: 12px; }.composition-mark { width: 54px; height: 54px; }
   .material-preview { width: 182px; margin: 5px auto 0; }.material-rail { gap: 4px; padding-top: 4px; padding-bottom: 5px; }.material-chip { min-height: 42px; padding-top: 4px; padding-bottom: 4px; }
   .message-record { width: 175px; top: 164px; }.message-field { margin-bottom: 7px; }.message-field textarea { font-size: 17px; }
   .reveal-screen { padding-top: 67px; }.reveal-title h2 { font-size: 42px; }.reveal-art { height: 287px; }.reveal-art .record-preview { width: 286px; }.reveal-sleeve { width: 248px; }.reveal-message { margin: 7px 0 4px; }
@@ -240,6 +252,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px
   .upload-stage { position: absolute; width: 470px; right: 90px; top: 130px; }.upload-screen .footer-action { width: 360px; }
   .style-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 38px; }.style-card { min-height: 360px; grid-template-columns: 1fr; grid-template-rows: 240px auto; padding: 15px; }.style-art { width: 230px; height: 230px; margin: 0 auto; }.option-copy strong { font-size: 17px; }.style-grid + .footer-action { width: 360px; align-self: flex-end; }
   .density-screen .screen-title h2 { font-size: 54px; }.density-stage { width: 440px; right: 85px; top: 145px; }.density-options { width: 390px; margin-top: 45px; }.density-options button { min-height: 82px; }.density-options + .footer-action { width: 390px; }
+  .composition-screen .screen-title { width: 480px; }.composition-options { grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 58px; }.composition-options button { min-height: 320px; grid-template-columns: 1fr; grid-template-rows: 160px auto; align-items: start; padding: 28px; }.composition-mark { width: 140px; height: 140px; font-size: 54px; }.composition-options strong { font-size: 22px; }.composition-options small { font-size: 11px; }.composition-options + .footer-action { width: 390px; align-self: flex-end; }
   .material-screen .screen-title { padding: 0 70px; }.material-preview { position: absolute; width: 470px; right: 95px; top: 132px; }.material-rail { grid-template-columns: repeat(3, 168px); width: 535px; margin: 70px 0 0 0; padding: 10px 0; gap: 10px; }.material-chip { min-height: 86px; padding: 9px; }.material-screen .footer-action { margin-left: 70px; width: 360px; }
   .message-record { width: 450px; right: 85px; top: 155px; }.message-field { width: 440px; margin-top: 90px; }.message-screen .footer-action { width: 440px; }
   .making-art { width: 560px; left: 48%; top: 13%; }.making-copy { left: 70px; bottom: 80px; }.making-copy h2 { font-size: 92px; }

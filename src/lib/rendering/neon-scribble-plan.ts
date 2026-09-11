@@ -21,21 +21,27 @@ export function buildNeonScribbleRenderPlan(input: {
 
   const motifs = [...new Set(input.analysis.motifs.map(normalizeMotif).filter(Boolean))].slice(0, 4);
   const aiPhrases = sanitizeAiPhrases(input.aiPhrases);
+  const compositionMode = input.artDirection.compositionMode;
+  const modeInstruction = compositionMode === "text_led"
+    ? "TEXT-LED composition: reserve an open lower-right outer-vinyl arc as a Hero Lettering zone. Place supporting paint around that empty zone; do not render any words inside it."
+    : "MOTIF-LED composition: image-derived doodles lead, with about 65% of marks as loose micro symbols, at most one larger thematic motif, and an irregular asymmetric rhythm.";
   const prompt = [
     "Create a transparent outer artwork layer for a real black vinyl record.",
     "Use opaque acrylic paint-marker strokes with hand pressure variation, uneven edges, repeated passes, and human wobble.",
     `Use this controlled palette: primary ${input.analysis.palette.primary}, secondary ${input.analysis.palette.secondary}, neutral ${input.analysis.palette.neutral}, surprise accent ${input.analysis.palette.surprise}.`,
     `Use one loose larger motif and smaller marginal marks inspired by: ${motifs.join(", ") || "star, arrow, circle"}.`,
+    modeInstruction,
     "Medium density: rich and energetic, roughly 6–10 meaningful larger elements and 10–18 smaller marks, with visible breathing room.",
     "Reserve the center 30% diameter as a completely clean circular zone. Preserve visible grooves between marks.",
     "No typography, letters, numbers, signatures, labels, center photo, sleeve, or background. Output marks only on transparency.",
   ].join(" ");
 
   return {
-    version: "neon-scribble-v1",
+    version: "neon-scribble-v2",
     palette: input.analysis.palette,
     density: "medium",
     material: "classic",
+    compositionMode,
     motifs,
     userMessage: input.artDirection.userMessage,
     aiPhrases,
@@ -44,6 +50,11 @@ export function buildNeonScribbleRenderPlan(input: {
       preserveGrooves: true,
       maxLargeMotifs: 1,
       centerProtection: "composite-source-last",
+      heroLetteringZone: {
+        reserved: compositionMode === "text_led",
+        placement: "lower-right-arc",
+        applicationOwnedText: true,
+      },
     },
     prompt,
     negativePrompt: "cyberpunk HUD, neon signage, glossy CGI, vector icons, sticker collage, chalk, crayon, watercolor, rainbow fill, poster layout, text, letters, logo, face, portrait, center label",

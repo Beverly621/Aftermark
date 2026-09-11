@@ -3,13 +3,14 @@
 import { createContext, Dispatch, ReactNode, useContext, useMemo, useReducer } from "react";
 import { createCatalogNumber, todayIso } from "@/lib/catalog";
 import { validateUserMessage } from "@/lib/message-validation";
-import { DoodleDensity, ImagePalette, RecordArtDirection, RecordMaterial, RecordRenderResult, StylePack } from "@/types/record";
+import { CompositionMode, DoodleDensity, ImagePalette, RecordArtDirection, RecordMaterial, RecordRenderResult, StylePack } from "@/types/record";
 
 interface CreationState {
   image: string;
   fileName: string;
   stylePack: StylePack;
   doodleDensity: DoodleDensity;
+  compositionMode: CompositionMode;
   material: RecordMaterial;
   userMessage: string;
   date: string;
@@ -17,7 +18,7 @@ interface CreationState {
   imagePalette?: ImagePalette;
   result?: RecordRenderResult;
   messageValidation: { count: number; valid: boolean };
-  choicesMade: { style: boolean; density: boolean; material: boolean };
+  choicesMade: { style: boolean; density: boolean; composition: boolean; material: boolean };
 }
 
 type Action =
@@ -25,6 +26,7 @@ type Action =
   | { type: "SET_PALETTE"; imagePalette: ImagePalette }
   | { type: "SET_STYLE"; stylePack: StylePack }
   | { type: "SET_DENSITY"; doodleDensity: DoodleDensity }
+  | { type: "SET_COMPOSITION_MODE"; compositionMode: CompositionMode }
   | { type: "SET_MATERIAL"; material: RecordMaterial }
   | { type: "SET_MESSAGE"; userMessage: string }
   | { type: "SET_RESULT"; result: RecordRenderResult }
@@ -37,12 +39,13 @@ function getInitialState(): CreationState {
     fileName: "",
     stylePack: "neon_scribble",
     doodleDensity: "medium",
+    compositionMode: "motif_led",
     material: "classic",
     userMessage: "",
     date,
     catalogNumber: createCatalogNumber("neon_scribble"),
     messageValidation: { count: 0, valid: true },
-    choicesMade: { style: false, density: false, material: false },
+    choicesMade: { style: false, density: false, composition: false, material: false },
   };
 }
 
@@ -52,6 +55,7 @@ function reducer(state: CreationState, action: Action): CreationState {
     case "SET_PALETTE": return { ...state, imagePalette: action.imagePalette };
     case "SET_STYLE": return { ...state, stylePack: action.stylePack, catalogNumber: createCatalogNumber(action.stylePack), choicesMade: { ...state.choicesMade, style: true } };
     case "SET_DENSITY": return { ...state, doodleDensity: action.doodleDensity, choicesMade: { ...state.choicesMade, density: true } };
+    case "SET_COMPOSITION_MODE": return { ...state, compositionMode: action.compositionMode, choicesMade: { ...state.choicesMade, composition: true } };
     case "SET_MATERIAL": return { ...state, material: action.material, choicesMade: { ...state.choicesMade, material: true } };
     case "SET_MESSAGE": {
       return { ...state, userMessage: action.userMessage, messageValidation: validateUserMessage(action.userMessage) };
@@ -69,6 +73,7 @@ export function CreationProvider({ children }: { children: ReactNode }) {
     image: state.image,
     stylePack: state.stylePack,
     doodleDensity: state.doodleDensity,
+    compositionMode: state.compositionMode,
     material: state.material,
     userMessage: state.userMessage.trim() || undefined,
     date: state.date,

@@ -4,15 +4,21 @@ import { RenderPipelineError, translateUnknownError } from "@/lib/rendering/erro
 
 export class DevelopmentOuterArtProvider implements ArtworkGenerationProvider {
   readonly id = "development-svg-outer-art-v1";
+  readonly modelId = "deterministic-svg-v1";
   readonly mode = "development" as const;
 
   async generate(request: ArtworkGenerationRequest): Promise<ArtworkGenerationResult> {
+    const startedAt = performance.now();
     const svg = createDevelopmentOuterArt(request);
     return {
       layerDataUrl: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
       mimeType: "image/svg+xml",
       providerId: this.id,
+      modelId: this.modelId,
       providerMode: this.mode,
+      requestId: request.requestId,
+      latencyMs: Math.round(performance.now() - startedAt),
+      cost: { kind: "actual", amountUsd: 0 },
     };
   }
 }
@@ -24,15 +30,18 @@ export class DevelopmentOuterArtProvider implements ArtworkGenerationProvider {
  */
 export class HttpArtworkGenerationProvider implements ArtworkGenerationProvider {
   readonly id = "configured-http-artwork-provider";
+  readonly modelId: string;
   readonly mode = "production" as const;
 
-  constructor(private readonly endpoint: string, private readonly apiKey: string, private readonly timeoutMs = 30_000) {
+  constructor(private readonly endpoint: string, private readonly apiKey: string, modelId = "configured-http-model", private readonly timeoutMs = 30_000) {
+    this.modelId = modelId;
     if (!endpoint || !apiKey) {
       throw new RenderPipelineError("MISSING_CONFIGURATION", "Production artwork generation is not configured.", false);
     }
   }
 
   async generate(request: ArtworkGenerationRequest): Promise<ArtworkGenerationResult> {
+    const startedAt = performance.now();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -43,15 +52,20 @@ export class HttpArtworkGenerationProvider implements ArtworkGenerationProvider 
         signal: controller.signal,
       });
       if (!response.ok) throw new RenderPipelineError("GENERATION_FAILED", `Artwork provider returned ${response.status}.`, true);
-      const payload = await response.json() as { imageBase64?: string; mimeType?: string };
-      if (!payload.imageBase64 || (payload.mimeType !== "image/png" && payload.mimeType !== "image/svg+xml")) {
+      const payload = await response.json() as { imageBase64?: string; mimeType?: string; requestId?: string; costUsd?: number };
+      if (!payload.imageBase64 || !isSupportedMimeType(payload.mimeType)) {
         throw new RenderPipelineError("GENERATION_FAILED", "Artwork provider returned an invalid image layer.", true);
       }
       return {
         layerDataUrl: `data:${payload.mimeType};base64,${payload.imageBase64}`,
         mimeType: payload.mimeType,
         providerId: this.id,
+        modelId: this.modelId,
         providerMode: this.mode,
+        requestId: request.requestId,
+        providerRequestId: payload.requestId,
+        latencyMs: Math.round(performance.now() - startedAt),
+        cost: typeof payload.costUsd === "number" ? { kind: "actual", amountUsd: payload.costUsd } : { kind: "unavailable" },
       };
     } catch (error) {
       throw translateUnknownError(error);
@@ -68,22 +82,29 @@ export function resolveArtworkProvider(): ArtworkGenerationProvider {
     return new HttpArtworkGenerationProvider(
       process.env.AFTERMARK_ARTWORK_PROVIDER_URL ?? "",
       process.env.AFTERMARK_ARTWORK_PROVIDER_API_KEY ?? "",
+      process.env.AFTERMARK_ARTWORK_PROVIDER_MODEL ?? "configured-http-model",
     );
   }
   throw new RenderPipelineError("MISSING_CONFIGURATION", `Unknown artwork provider mode: ${mode}.`, false);
+}
+
+function isSupportedMimeType(value: unknown): value is ArtworkGenerationResult["mimeType"] {
+  return value === "image/png" || value === "image/jpeg" || value === "image/webp" || value === "image/svg+xml";
 }
 
 function createDevelopmentOuterArt({ plan, width, height }: ArtworkGenerationRequest): string {
   const p = plan.palette;
   const motif = plan.motifs[0] ?? "star";
   const thematic = motifPath(motif, p.primary);
+  const lowerRightMarks = plan.compositionMode === "text_led" ? "" : `
+      <path d="M1442 1390c80 3 156 48 178 119-58 70-151 97-236 67-48-76-21-150 58-186z" stroke="${p.primary}" stroke-width="32"/>
+      <path d="M1480 1475h5M1570 1475h5M1498 1522c34 25 68 24 101-2" stroke="${p.primary}" stroke-width="28"/>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 2048 2048">
     <g fill="none" stroke-linecap="round" stroke-linejoin="round">
       ${thematic}
       <path d="M455 530c80-92 188-38 189 48 38-86 161-112 208-28 54 98-117 221-197 276-85-54-270-174-200-296z" stroke="${p.surprise}" stroke-width="34"/>
       <path d="M1420 398l35 92 98 6-76 61 25 96-82-55-84 52 29-94-73-64 98 0z" stroke="${p.secondary}" stroke-width="30"/>
-      <path d="M1442 1390c80 3 156 48 178 119-58 70-151 97-236 67-48-76-21-150 58-186z" stroke="${p.primary}" stroke-width="32"/>
-      <path d="M1480 1475h5M1570 1475h5M1498 1522c34 25 68 24 101-2" stroke="${p.primary}" stroke-width="28"/>
+      ${lowerRightMarks}
       <path d="M326 1320c116 42 214 108 288 210M348 1380c92 31 165 75 223 137" stroke="${p.neutral}" stroke-width="30"/>
       <path d="M1405 835c116 27 214 24 318-18M1425 900c96 20 178 14 258-9" stroke="${p.secondary}" stroke-width="29"/>
       <path d="M390 955c105-51 216-61 314-28M398 1016c99-35 193-35 276-12" stroke="${p.primary}" stroke-width="30"/>

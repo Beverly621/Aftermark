@@ -7,8 +7,8 @@ export function AppShell({ children, showHeader, onBack, progress }: { children:
         <header className="app-header">
           <button className={`back-button ${onBack ? "" : "invisible"}`} onClick={onBack} aria-label="Go back">←</button>
           <span className="brand-lockup">AFTERMARK</span>
-          {progress ? <span className="step-count">{String(progress).padStart(2, "0")} / 05</span> : <span className="step-count">ONE OF ONE</span>}
-          {progress && <div className="progress-track" aria-hidden><span style={{ width: `${progress * 20}%` }} /></div>}
+          {progress ? <span className="step-count">{String(progress).padStart(2, "0")} / 06</span> : <span className="step-count">ONE OF ONE</span>}
+          {progress && <div className="progress-track" aria-hidden><span style={{ width: `${(progress / 6) * 100}%` }} /></div>}
         </header>
       )}
       {children}

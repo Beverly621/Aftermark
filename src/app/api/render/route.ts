@@ -31,7 +31,10 @@ function parseArtDirection(value: unknown): RecordArtDirection {
     throw new RenderPipelineError("INVALID_IMAGE", "Choose a supported image and try again.", false);
   }
   if (input.stylePack !== "neon_scribble" || input.doodleDensity !== "medium" || input.material !== "classic") {
-    throw new RenderPipelineError("UNSUPPORTED_COMBINATION", "Task 01 supports After Dark, Leave a Trace, and Classic only.", false);
+    throw new RenderPipelineError("UNSUPPORTED_COMBINATION", "Task 02-B01 supports After Dark, Leave a Trace, and Classic only.", false);
+  }
+  if (input.compositionMode !== "text_led" && input.compositionMode !== "motif_led") {
+    throw new RenderPipelineError("INVALID_REQUEST", "Choose what should lead the composition.", false);
   }
   if (!isIsoDate(input.date) || typeof input.catalogNumber !== "string" || !/^NS-\d{6}-\d{3}$/.test(input.catalogNumber)) {
     throw new RenderPipelineError("INVALID_REQUEST", "The collectible metadata is invalid.", false);

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
+    "benchmark:providers": "node --conditions=react-server --import tsx scripts/run-provider-benchmark.ts",
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

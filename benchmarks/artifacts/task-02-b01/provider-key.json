@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-09-11T10:25:38.756Z",
+  "revealOnlyAfterBlindScoring": true,
+  "winnerSelected": false,
+  "providers": [
+    {
+      "alias": "P1",
+      "providerId": "openai",
+      "modelId": "gpt-image-2",
+      "available": false,
+      "missingConfiguration": [
+        "AFTERMARK_OPENAI_API_KEY or OPENAI_API_KEY"
+      ]
+    },
+    {
+      "alias": "P2",
+      "providerId": "google",
+      "modelId": "gemini-3-pro-image",
+      "available": false,
+      "missingConfiguration": [
+        "AFTERMARK_GOOGLE_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY"
+      ]
+    },
+    {
+      "alias": "P3",
+      "providerId": "bfl",
+      "modelId": "flux-2-pro",
+      "available": false,
+      "missingConfiguration": [
+        "AFTERMARK_BFL_API_KEY or BFL_API_KEY"
+      ]
+    }
+  ]
+}

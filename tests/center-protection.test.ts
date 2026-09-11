@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 import sharp from "sharp";
-import { CENTER_LABEL_DIAMETER, RECORD_CENTER, SharpFinalRecordCompositor } from "../src/lib/rendering/compositor.server";
+import { CENTER_LABEL_DIAMETER, createDeterministicTextSvg, RECORD_CENTER, SharpFinalRecordCompositor } from "../src/lib/rendering/compositor.server";
 import { ArtworkGenerationResult } from "../src/lib/rendering/contracts";
 import { NeonScribbleRenderPlan, RecordArtDirection } from "../src/types/record";
 
@@ -39,11 +39,30 @@ test("critical composition is byte-deterministic for identical input", async () 
   assert.equal(first.artwork.dataUrl, second.artwork.dataUrl);
 });
 
+test("user text remains deterministic and application-rendered in both composition modes", () => {
+  const source = Buffer.from("source");
+  for (const compositionMode of ["text_led", "motif_led"] as const) {
+    const artDirection = { ...fixtureArtDirection(source), compositionMode, userMessage: "夏天没有结束 & always" };
+    const plan = {
+      ...fixturePlan,
+      compositionMode,
+      composition: { ...fixturePlan.composition, heroLetteringZone: { ...fixturePlan.composition.heroLetteringZone, reserved: compositionMode === "text_led" } },
+    };
+    const input = { artDirection, plan, outerArtwork: fixtureOuterArtwork("") };
+    const first = createDeterministicTextSvg(input);
+    const second = createDeterministicTextSvg(input);
+    assert.equal(first, second);
+    assert.match(first, /夏天没有结束 &amp; always/);
+    assert.equal(plan.prompt.includes(artDirection.userMessage), false);
+  }
+});
+
 function fixtureArtDirection(source: Buffer): RecordArtDirection {
   return {
     image: `data:image/png;base64,${source.toString("base64")}`,
     stylePack: "neon_scribble",
     doodleDensity: "medium",
+    compositionMode: "motif_led",
     material: "classic",
     userMessage: "we were here",
     date: "2026-09-10",
@@ -53,14 +72,21 @@ function fixtureArtDirection(source: Buffer): RecordArtDirection {
 }
 
 const fixturePlan: NeonScribbleRenderPlan = {
-  version: "neon-scribble-v1",
+  version: "neon-scribble-v2",
   palette: { primary: "#2bc4d9", secondary: "#ffd34e", neutral: "#f4f0e6", surprise: "#ff4f9a" },
   density: "medium",
   material: "classic",
+  compositionMode: "motif_led",
   motifs: ["wave", "sun"],
   userMessage: "we were here",
   aiPhrases: ["salt air", "late light"],
-  composition: { centerLabelRatio: 0.3, preserveGrooves: true, maxLargeMotifs: 1, centerProtection: "composite-source-last" },
+  composition: {
+    centerLabelRatio: 0.3,
+    preserveGrooves: true,
+    maxLargeMotifs: 1,
+    centerProtection: "composite-source-last",
+    heroLetteringZone: { reserved: false, placement: "lower-right-arc", applicationOwnedText: true },
+  },
   prompt: "fixture",
   negativePrompt: "fixture",
 };
@@ -70,6 +96,10 @@ function fixtureOuterArtwork(svg: string): ArtworkGenerationResult {
     layerDataUrl: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
     mimeType: "image/svg+xml",
     providerId: "test",
+    modelId: "fixture",
     providerMode: "development",
+    requestId: "request-id",
+    latencyMs: 0,
+    cost: { kind: "actual", amountUsd: 0 },
   };
 }

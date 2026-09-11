@@ -32,6 +32,13 @@ export class ServerAIRecordRenderer {
         renderPlan: plan,
         renderMode: provider.mode,
         sourceImageSha256: composited.sourceImageSha256,
+        providerDiagnostics: {
+          providerId: outerArtwork.providerId,
+          modelId: outerArtwork.modelId,
+          latencyMs: outerArtwork.latencyMs,
+          costUsd: outerArtwork.cost?.amountUsd,
+          costKind: outerArtwork.cost?.kind,
+        },
       };
     } catch (error) {
       throw translateUnknownError(error);
@@ -51,7 +58,7 @@ async function analyzeWithSafeFallback(artDirection: RecordArtDirection): Promis
 
 function createRequestId(input: RecordArtDirection, sourceImageSha256: string): string {
   return createHash("sha256")
-    .update(JSON.stringify({ sourceImageSha256, style: input.stylePack, density: input.doodleDensity, material: input.material, message: input.userMessage ?? "", catalog: input.catalogNumber }))
+    .update(JSON.stringify({ sourceImageSha256, style: input.stylePack, density: input.doodleDensity, compositionMode: input.compositionMode, material: input.material, message: input.userMessage ?? "", catalog: input.catalogNumber }))
     .digest("hex")
     .slice(0, 24);
 }

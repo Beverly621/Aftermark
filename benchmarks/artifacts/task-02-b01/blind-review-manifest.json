@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "aftermark-blind-review-manifest-v1",
+  "benchmarkVersion": "task-02-b01-v1",
+  "generatedAt": "2026-09-11T10:25:38.756Z",
+  "reviewStatus": "awaiting-blind-scoring",
+  "winnerSelected": false,
+  "aliases": [
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "counts": {
+    "planned": 18,
+    "completed": 0,
+    "skipped": 18,
+    "failed": 0
+  },
+  "frozenSettings": {
+    "stylePack": "neon_scribble",
+    "density": "medium",
+    "material": "classic",
+    "modes": [
+      "text_led",
+      "motif_led"
+    ]
+  },
+  "invariants": {
+    "expectedJobs": 18,
+    "providerBoundaryPrivacyChecks": 18,
+    "deterministicTextExcluded": true,
+    "rawProviderPromptsLogged": false
+  },
+  "artifacts": {
+    "anonymousContactSheet": "benchmarks/artifacts/task-02-b01/anonymous-contact-sheet.png"
+  },
+  "inputs": [
+    {
+      "id": "G01",
+      "label": "Day Landscape",
+      "sourcePath": "assets/benchmark-inputs/G01_DAY_LANDSCAPE_COAST.png",
+      "pinnedSha256": "2c412d974cc67eb4fffbd8799c4a9c2bc97abec4019510817c22bb06498b1e4e",
+      "actualSha256": "2c412d974cc67eb4fffbd8799c4a9c2bc97abec4019510817c22bb06498b1e4e",
+      "available": true,
+      "hashMatches": true,
+      "palette": {
+        "primary": "#2bc4d9",
+        "secondary": "#e7cf9c",
+        "neutral": "#f4f0e6",
+        "surprise": "#ff4f9a"
+      },
+      "motifs": [
+        "wave",
+        "cliff",
+        "bird",
+        "sun"
+      ],
+      "sceneSummary": "Daylight coastal landscape with open sky"
+    },
+    {
+      "id": "G02",
+      "label": "Single Portrait",
+      "sourcePath": "assets/benchmark-inputs/G02_PORTRAIT_CC0.jpg",
+      "pinnedSha256": "3bd51cd75d45eb1ef0179487544636a6d5638b22bb1e5e8c255b54282f43eb8f",
+      "actualSha256": "3bd51cd75d45eb1ef0179487544636a6d5638b22bb1e5e8c255b54282f43eb8f",
+      "available": true,
+      "hashMatches": true,
+      "palette": {
+        "primary": "#bd705b",
+        "secondary": "#597b83",
+        "neutral": "#f4f0e6",
+        "surprise": "#dfff36"
+      },
+      "motifs": [
+        "star",
+        "window",
+        "flower",
+        "motion"
+      ],
+      "sceneSummary": "Ordinary phone portrait"
+    },
+    {
+      "id": "G06",
+      "label": "Night Low Saturation",
+      "sourcePath": "assets/benchmark-inputs/G06_NIGHT_LOW_SATURATION_CC0.jpg",
+      "pinnedSha256": "cbdeb205b5265c3309b4a4e16bc4305906b22791226b1d4f51045cc23e545336",
+      "actualSha256": "cbdeb205b5265c3309b4a4e16bc4305906b22791226b1d4f51045cc23e545336",
+      "available": true,
+      "hashMatches": true,
+      "palette": {
+        "primary": "#596378",
+        "secondary": "#89919b",
+        "neutral": "#f4f0e6",
+        "surprise": "#ff6b35"
+      },
+      "motifs": [
+        "moon",
+        "streetlight",
+        "window",
+        "cloud"
+      ],
+      "sceneSummary": "Dark low-saturation night scene"
+    }
+  ],
+  "results": [
+    {
+      "providerAlias": "P1",
+      "inputId": "G01",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "352ffc6a3cd1b0ca930b4a2e",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P1",
+      "inputId": "G01",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "c96f511474b264a0fe8dbeb4",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P1",
+      "inputId": "G02",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "1c841b3d48b97e11f08b90ca",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P1",
+      "inputId": "G02",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "fab67463cf494c3beaeb0a2c",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P1",
+      "inputId": "G06",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "a8aa3446f483368f6d35f1eb",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P1",
+      "inputId": "G06",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "cae7d3b01624c0150434beaf",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G01",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "2d45220b97b71d1a24644f4c",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G01",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "0a8cb75f391c42fe8ec8fe68",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G02",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "0494ec331e42d366e42a6f3f",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G02",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "8f2c3dddf46fd38f302926c2",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G06",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "89c77bfb4254a4fd774239a6",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P2",
+      "inputId": "G06",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "34b6f86a2ec1fb8f515ed302",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G01",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "93e09d0e386b59b6834b6867",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G01",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "ed35fad7163dfae591202f4b",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G02",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "3da09d40ffd1878b478232a6",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G02",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "abe4c2409dd6516a451e5bd3",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G06",
+      "compositionMode": "text_led",
+      "status": "skipped",
+      "requestId": "36df0ca19171c1bb6b867298",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    },
+    {
+      "providerAlias": "P3",
+      "inputId": "G06",
+      "compositionMode": "motif_led",
+      "status": "skipped",
+      "requestId": "59d556e136b3a11a7635bcf4",
+      "blockerCodes": [
+        "provider_credentials_missing"
+      ]
+    }
+  ]
+}

@@ -102,12 +102,17 @@ function createBaseSvg(): string {
   </svg>`;
 }
 
-function createDeterministicTextSvg({ artDirection, plan }: FinalRecordCompositorInput): string {
+export function createDeterministicTextSvg({ artDirection, plan }: FinalRecordCompositorInput): string {
   const userMessage = artDirection.userMessage ? escapeXml(artDirection.userMessage.slice(0, 180)) : "";
   const firstPhrase = escapeXml(plan.aiPhrases[0] ?? "");
   const secondPhrase = escapeXml(plan.aiPhrases[1] ?? "");
   const catalog = escapeXml(artDirection.catalogNumber);
   const date = escapeXml(artDirection.date.replaceAll("-", "."));
+  const userMessageMarkup = userMessage
+    ? plan.compositionMode === "text_led"
+      ? `<text x="1360" y="1320" font-family="Georgia, serif" font-size="56" font-style="italic" font-weight="700" fill="${plan.palette.neutral}" text-anchor="middle" transform="rotate(-7 1360 1320)">${userMessage}</text><path d="M1115 1362c160 24 326 13 480-22" fill="none" stroke="${plan.palette.surprise}" stroke-width="16" stroke-linecap="round"/>`
+      : `<text x="1340" y="1335" font-family="Georgia, serif" font-size="38" font-style="italic" font-weight="700" fill="${plan.palette.neutral}" text-anchor="middle" transform="rotate(-5 1340 1335)">${userMessage}</text><path d="M1170 1366c112 16 230 11 340-14" fill="none" stroke="${plan.palette.surprise}" stroke-width="11" stroke-linecap="round"/>`
+    : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
     <g font-family="Courier New, monospace" fill="#f4f0e6">
@@ -119,7 +124,7 @@ function createDeterministicTextSvg({ artDirection, plan }: FinalRecordComposito
     </g>
     ${firstPhrase ? `<text x="1450" y="840" font-family="Georgia, serif" font-size="39" font-style="italic" font-weight="700" fill="${plan.palette.neutral}" transform="rotate(-7 1450 840)">${firstPhrase}</text>` : ""}
     ${secondPhrase ? `<text x="530" y="1450" font-family="Georgia, serif" font-size="34" font-style="italic" font-weight="700" fill="${plan.palette.secondary}" transform="rotate(9 530 1450)">${secondPhrase}</text>` : ""}
-    ${userMessage ? `<text x="1340" y="1335" font-family="Georgia, serif" font-size="42" font-style="italic" font-weight="700" fill="${plan.palette.neutral}" text-anchor="middle" transform="rotate(-5 1340 1335)">${userMessage}</text><path d="M1160 1368c120 18 245 13 360-15" fill="none" stroke="${plan.palette.surprise}" stroke-width="13" stroke-linecap="round"/>` : ""}
+    ${userMessageMarkup}
   </svg>`;
 }
 

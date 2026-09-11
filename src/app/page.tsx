@@ -9,11 +9,11 @@ import { CreationProvider, useCreation } from "@/context/CreationContext";
 import { extractPalette } from "@/lib/palette";
 import { getRecordRenderer, RecordRenderError } from "@/lib/renderer";
 import { saveShareCard, shareRecord } from "@/lib/share";
-import { DoodleDensity, RecordMaterial, StylePack } from "@/types/record";
+import { CompositionMode, DoodleDensity, RecordMaterial, StylePack } from "@/types/record";
 
-type Screen = "landing" | "upload" | "style" | "density" | "material" | "message" | "making" | "reveal" | "share";
+type Screen = "landing" | "upload" | "style" | "density" | "composition" | "material" | "message" | "making" | "reveal" | "share";
 
-const flow: Screen[] = ["landing", "upload", "style", "density", "material", "message", "making", "reveal", "share"];
+const flow: Screen[] = ["landing", "upload", "style", "density", "composition", "material", "message", "making", "reveal", "share"];
 
 const styleOptions: { value: StylePack; title: string; note: string }[] = [
   { value: "neon_scribble", title: "AFTER DARK", note: "Marker, motion, midnight." },
@@ -25,6 +25,11 @@ const densityOptions: { value: DoodleDensity; title: string; note: string }[] = 
   { value: "low", title: "KEEP IT CLEAN", note: "A few intentional marks." },
   { value: "medium", title: "LEAVE A TRACE", note: "Rich, balanced, still vinyl." },
   { value: "high", title: "GO ALL IN", note: "Dense, loud, layered." },
+];
+
+const compositionOptions: { value: CompositionMode; title: string; note: string; mark: string }[] = [
+  { value: "text_led", title: "THE WORDS", note: "Your message becomes the leading mark.", mark: "Aa" },
+  { value: "motif_led", title: "THE MARKS", note: "Image-inspired doodles lead the record.", mark: "✦" },
 ];
 
 const materialOptions: { value: RecordMaterial; title: string; note: string }[] = [
@@ -43,7 +48,8 @@ function Experience() {
   const [generationError, setGenerationError] = useState<RecordRenderError | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const stepIndex = Math.max(0, ["upload", "style", "density", "material", "message"].indexOf(screen));
+  const decisionScreens: Screen[] = ["upload", "style", "density", "composition", "material", "message"];
+  const stepIndex = Math.max(0, decisionScreens.indexOf(screen));
   const go = (next: Screen) => setScreen(next);
   const goBack = () => {
     const index = flow.indexOf(screen);
@@ -116,7 +122,7 @@ function Experience() {
     <AppShell
       showHeader={header}
       onBack={screen === "reveal" || screen === "share" ? undefined : goBack}
-      progress={screen === "upload" || screen === "style" || screen === "density" || screen === "material" || screen === "message" ? stepIndex + 1 : undefined}
+      progress={decisionScreens.includes(screen) ? stepIndex + 1 : undefined}
     >
       <AnimatePresence mode="wait">
         {screen === "landing" && (
@@ -192,14 +198,40 @@ function Experience() {
                 </button>
               ))}
             </div>
-            <button className="primary-button footer-action" disabled={!state.choicesMade.density} onClick={() => go("material")}>SET THE SURFACE <span>→</span></button>
+            <button className="primary-button footer-action" disabled={!state.choicesMade.density} onClick={() => go("composition")}>CHOOSE THE LEAD <span>→</span></button>
+          </motion.main>
+        )}
+
+        {screen === "composition" && (
+          <motion.main key="composition" className="screen decision-screen composition-screen" {...screenMotion}>
+            <div className="screen-title compact">
+              <p className="step-label">04 / COMPOSITION</p>
+              <h2>WHAT SHOULD LEAD?</h2>
+              <p>The words stay exact. The marks stay image-inspired.</p>
+            </div>
+            <div className="composition-options" role="radiogroup" aria-label="Composition mode">
+              {compositionOptions.map((option) => (
+                <button
+                  key={option.value}
+                  role="radio"
+                  aria-checked={state.compositionMode === option.value}
+                  className={state.compositionMode === option.value ? "selected" : ""}
+                  onClick={() => dispatch({ type: "SET_COMPOSITION_MODE", compositionMode: option.value })}
+                >
+                  <span className="composition-mark" aria-hidden>{option.mark}</span>
+                  <span><strong>{option.title}</strong><small>{option.note}</small></span>
+                  <span className="selection-mark">{state.compositionMode === option.value ? "●" : "○"}</span>
+                </button>
+              ))}
+            </div>
+            <button className="primary-button footer-action" disabled={!state.choicesMade.composition} onClick={() => go("material")}>SET THE SURFACE <span>→</span></button>
           </motion.main>
         )}
 
         {screen === "material" && (
           <motion.main key="material" className="screen decision-screen material-screen" {...screenMotion}>
             <div className="screen-title compact">
-              <p className="step-label">04 / SURFACE</p>
+              <p className="step-label">05 / SURFACE</p>
               <h2>PICK A SURFACE.</h2>
             </div>
             <div className="material-preview"><RecordPreview artDirection={currentDirection} size="material" /></div>
@@ -225,7 +257,7 @@ function Experience() {
         {screen === "message" && (
           <motion.main key="message" className="screen decision-screen message-screen" {...screenMotion}>
             <div className="screen-title">
-              <p className="step-label">05 / YOUR MARK</p>
+              <p className="step-label">06 / YOUR MARK</p>
               <h2>LEAVE ONE MARK.</h2>
               <p>A tiny note for the moment. Or leave it unwritten.</p>
             </div>
@@ -274,7 +306,11 @@ function Experience() {
               <div><span>MADE</span><strong>{formatDate(state.result.artDirection.date)}</strong></div>
             </div>
             {state.userMessage && <p className="reveal-message">“{state.userMessage}”</p>}
-            {state.result.renderMode === "development" && <p className="development-badge">DEVELOPMENT OUTER-ART ADAPTER</p>}
+            {state.result.renderMode === "development" && (
+              <p className="development-badge">
+                DEVELOPMENT · {state.result.providerDiagnostics?.providerId ?? "OUTER-ART ADAPTER"} · {state.result.providerDiagnostics?.modelId ?? "LOCAL"}
+              </p>
+            )}
             <button className="primary-button footer-action" onClick={() => go("share")}>KEEP THIS <span>→</span></button>
           </motion.main>
         )}
