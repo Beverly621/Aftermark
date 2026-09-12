@@ -3,6 +3,7 @@
 import { createContext, Dispatch, ReactNode, useContext, useMemo, useReducer } from "react";
 import { createCatalogNumber, todayIso } from "@/lib/catalog";
 import { validateUserMessage } from "@/lib/message-validation";
+import { AftermarkStudioRequest } from "@/lib/studio/contracts";
 import { CompositionMode, DoodleDensity, ImagePalette, RecordArtDirection, RecordMaterial, RecordRenderResult, StylePack } from "@/types/record";
 
 interface CreationState {
@@ -29,6 +30,7 @@ type Action =
   | { type: "SET_COMPOSITION_MODE"; compositionMode: CompositionMode }
   | { type: "SET_MATERIAL"; material: RecordMaterial }
   | { type: "SET_MESSAGE"; userMessage: string }
+  | { type: "HYDRATE_STUDIO_REQUEST"; request: AftermarkStudioRequest; image: string }
   | { type: "SET_RESULT"; result: RecordRenderResult }
   | { type: "RESET" };
 
@@ -60,6 +62,21 @@ function reducer(state: CreationState, action: Action): CreationState {
     case "SET_MESSAGE": {
       return { ...state, userMessage: action.userMessage, messageValidation: validateUserMessage(action.userMessage) };
     }
+    case "HYDRATE_STUDIO_REQUEST": return {
+      ...state,
+      image: action.image,
+      fileName: action.request.sourceImagePath.split("/").at(-1) ?? "source",
+      stylePack: action.request.stylePack,
+      doodleDensity: action.request.doodleDensity,
+      compositionMode: action.request.compositionMode,
+      material: action.request.material,
+      userMessage: action.request.userMessage,
+      date: action.request.createdAt.slice(0, 10),
+      imagePalette: undefined,
+      result: undefined,
+      messageValidation: validateUserMessage(action.request.userMessage),
+      choicesMade: { style: true, density: true, composition: true, material: true },
+    };
     case "SET_RESULT": return { ...state, result: action.result };
     case "RESET": return getInitialState();
   }

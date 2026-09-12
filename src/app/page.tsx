@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RecordPreview } from "@/components/RecordPreview";
 import { ShareCard } from "@/components/ShareCard";
@@ -9,6 +9,8 @@ import { CreationProvider, useCreation } from "@/context/CreationContext";
 import { extractPalette } from "@/lib/palette";
 import { getRecordRenderer, RecordRenderError } from "@/lib/renderer";
 import { saveShareCard, shareRecord } from "@/lib/share";
+import { fetchStudioSnapshot, studioResult, submitStudioRequest } from "@/lib/studio/client";
+import { StudioBrowserSnapshot, isTask2C01StudioOptionSupported } from "@/lib/studio/contracts";
 import { CompositionMode, DoodleDensity, RecordMaterial, StylePack } from "@/types/record";
 
 type Screen = "landing" | "upload" | "style" | "density" | "composition" | "material" | "message" | "making" | "reveal" | "share";
@@ -46,6 +48,7 @@ function Experience() {
   const [messageError, setMessageError] = useState("");
   const [shareStatus, setShareStatus] = useState("");
   const [generationError, setGenerationError] = useState<RecordRenderError | null>(null);
+  const [studioSnapshot, setStudioSnapshot] = useState<StudioBrowserSnapshot | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const decisionScreens: Screen[] = ["upload", "style", "density", "composition", "material", "message"];
@@ -55,6 +58,40 @@ function Experience() {
     const index = flow.indexOf(screen);
     if (index > 0) setScreen(flow[index - 1]);
   };
+
+  const applyStudioSnapshot = useCallback((snapshot: StudioBrowserSnapshot) => {
+    setStudioSnapshot(snapshot);
+    if (!snapshot.request || !snapshot.files.source) return;
+    const sourceUrl = `${snapshot.files.source}?v=${encodeURIComponent(snapshot.status.updatedAt)}`;
+    dispatch({ type: "HYDRATE_STUDIO_REQUEST", request: snapshot.request, image: sourceUrl });
+    const result = studioResult(snapshot);
+    if (result) {
+      dispatch({ type: "SET_RESULT", result });
+      setGenerationError(null);
+      setScreen("reveal");
+    } else if (snapshot.status.state === "error") {
+      setGenerationError(new RecordRenderError("GENERATION_FAILED", snapshot.status.message ?? "The local development render could not be completed.", false));
+      setScreen("making");
+    } else {
+      setScreen("making");
+    }
+  }, [dispatch]);
+
+  const refreshStudio = useCallback(async () => {
+    const snapshot = await fetchStudioSnapshot();
+    if (snapshot) applyStudioSnapshot(snapshot);
+    return snapshot;
+  }, [applyStudioSnapshot]);
+
+  useEffect(() => {
+    refreshStudio().catch(() => undefined);
+  }, [refreshStudio]);
+
+  useEffect(() => {
+    if (!studioSnapshot?.request || studioSnapshot.status.state === "complete" || studioSnapshot.status.state === "error") return;
+    const timer = window.setInterval(() => refreshStudio().catch(() => undefined), 600);
+    return () => window.clearInterval(timer);
+  }, [refreshStudio, studioSnapshot?.request, studioSnapshot?.status.state]);
 
   const onImage = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -79,6 +116,19 @@ function Experience() {
     setGenerationError(null);
     go("making");
     try {
+      if (studioSnapshot) {
+        if (studioSnapshot.request) {
+          await refreshStudio();
+          return;
+        }
+        const updated = await submitStudioRequest({
+          sessionId: studioSnapshot.session.sessionId,
+          image: state.image,
+          artDirection,
+        });
+        applyStudioSnapshot(updated);
+        return;
+      }
       const result = await getRecordRenderer(artDirection).render(artDirection);
       dispatch({ type: "SET_RESULT", result });
       window.setTimeout(() => go("reveal"), 900);
@@ -165,21 +215,27 @@ function Experience() {
               <h2>WHERE DOES<br />THIS RECORD LIVE?</h2>
             </div>
             <div className="style-grid" role="radiogroup" aria-label="Style world">
-              {styleOptions.map((option) => (
-                <button
-                  key={option.value}
-                  role="radio"
-                  aria-checked={state.stylePack === option.value}
-                  className={`style-card ${option.value} ${state.stylePack === option.value ? "selected" : ""}`}
-                  onClick={() => dispatch({ type: "SET_STYLE", stylePack: option.value })}
-                >
-                  <span className="style-art"><RecordPreview artDirection={{ ...currentDirection, stylePack: option.value }} decorative size="card" /></span>
-                  <span className="option-copy"><strong>{option.title}</strong><small>{option.note}</small></span>
-                  <span className="selection-mark">{state.stylePack === option.value ? "●" : "○"}</span>
-                </button>
-              ))}
+              {styleOptions.map((option) => {
+                const unavailable = Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("stylePack", option.value);
+                const selected = !unavailable && state.stylePack === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    role="radio"
+                    aria-checked={selected}
+                    aria-disabled={unavailable}
+                    disabled={unavailable}
+                    className={`style-card ${option.value} ${selected ? "selected" : ""} ${unavailable ? "skill-unavailable" : ""}`}
+                    onClick={() => dispatch({ type: "SET_STYLE", stylePack: option.value })}
+                  >
+                    <span className="style-art"><RecordPreview artDirection={{ ...currentDirection, stylePack: option.value }} decorative size="card" /></span>
+                    <span className="option-copy"><strong>{option.title}</strong><small>{option.note}</small></span>
+                    {unavailable ? <span className="skill-option-status">COMING LATER</span> : <span className="selection-mark">{selected ? "●" : "○"}</span>}
+                  </button>
+                );
+              })}
             </div>
-            <button className="primary-button footer-action" disabled={!state.choicesMade.style} onClick={() => go("density")}>THIS ONE <span>→</span></button>
+            <button className="primary-button footer-action" disabled={!state.choicesMade.style || (Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("stylePack", state.stylePack))} onClick={() => go("density")}>THIS ONE <span>→</span></button>
           </motion.main>
         )}
 
@@ -191,14 +247,27 @@ function Experience() {
             </div>
             <div className="density-stage"><RecordPreview artDirection={currentDirection} size="density" /></div>
             <div className="density-options" role="radiogroup" aria-label="Doodle intensity">
-              {densityOptions.map((option) => (
-                <button key={option.value} role="radio" aria-checked={state.doodleDensity === option.value} className={state.doodleDensity === option.value ? "selected" : ""} onClick={() => dispatch({ type: "SET_DENSITY", doodleDensity: option.value })}>
-                  <span className="density-line" data-density={option.value} />
-                  <strong>{option.title}</strong><small>{option.note}</small>
-                </button>
-              ))}
+              {densityOptions.map((option) => {
+                const unavailable = Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("doodleDensity", option.value);
+                const selected = !unavailable && state.doodleDensity === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    role="radio"
+                    aria-checked={selected}
+                    aria-disabled={unavailable}
+                    disabled={unavailable}
+                    className={`${selected ? "selected" : ""} ${unavailable ? "skill-unavailable" : ""}`}
+                    onClick={() => dispatch({ type: "SET_DENSITY", doodleDensity: option.value })}
+                  >
+                    <span className="density-line" data-density={option.value} />
+                    <strong>{option.title}</strong><small>{option.note}</small>
+                    {unavailable && <span className="skill-option-status">COMING LATER</span>}
+                  </button>
+                );
+              })}
             </div>
-            <button className="primary-button footer-action" disabled={!state.choicesMade.density} onClick={() => go("composition")}>CHOOSE THE LEAD <span>→</span></button>
+            <button className="primary-button footer-action" disabled={!state.choicesMade.density || (Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("doodleDensity", state.doodleDensity))} onClick={() => go("composition")}>CHOOSE THE LEAD <span>→</span></button>
           </motion.main>
         )}
 
@@ -236,21 +305,28 @@ function Experience() {
             </div>
             <div className="material-preview"><RecordPreview artDirection={currentDirection} size="material" /></div>
             <div className="material-rail" role="radiogroup" aria-label="Record material">
-              {materialOptions.map((option) => (
-                <button
-                  key={option.value}
-                  data-material={option.value}
-                  role="radio"
-                  aria-checked={state.material === option.value}
-                  className={`material-chip ${state.material === option.value ? "selected" : ""}`}
-                  onClick={() => dispatch({ type: "SET_MATERIAL", material: option.value })}
-                >
-                  <span className={`material-swatch ${option.value}`} />
-                  <strong>{option.title}</strong><small>{option.note}</small>
-                </button>
-              ))}
+              {materialOptions.map((option) => {
+                const unavailable = Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("material", option.value);
+                const selected = !unavailable && state.material === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    data-material={option.value}
+                    role="radio"
+                    aria-checked={selected}
+                    aria-disabled={unavailable}
+                    disabled={unavailable}
+                    className={`material-chip ${selected ? "selected" : ""} ${unavailable ? "skill-unavailable" : ""}`}
+                    onClick={() => dispatch({ type: "SET_MATERIAL", material: option.value })}
+                  >
+                    <span className={`material-swatch ${option.value}`} />
+                    <strong>{option.title}</strong><small>{option.note}</small>
+                    {unavailable && <span className="skill-option-status">COMING LATER</span>}
+                  </button>
+                );
+              })}
             </div>
-            <button className="primary-button footer-action" disabled={!state.choicesMade.material} onClick={() => go("message")}>LAST TOUCH <span>→</span></button>
+            <button className="primary-button footer-action" disabled={!state.choicesMade.material || (Boolean(studioSnapshot) && !isTask2C01StudioOptionSupported("material", state.material))} onClick={() => go("message")}>LAST TOUCH <span>→</span></button>
           </motion.main>
         )}
 
@@ -283,7 +359,8 @@ function Experience() {
             key="making"
             artDirection={currentDirection}
             error={generationError}
-            onRetry={makeRecord}
+            studioStatus={studioSnapshot?.status.state}
+            onRetry={studioSnapshot?.request ? () => { void refreshStudio(); } : makeRecord}
             onEdit={() => go(generationError?.code === "INVALID_IMAGE" ? "upload" : "message")}
           />
         )}
@@ -324,7 +401,11 @@ function Experience() {
               <button className="outline-button" onClick={handleShare}>SHARE</button>
             </div>
             <p className="share-status" role="status" aria-live="polite">{shareStatus}</p>
-            <button className="text-button" onClick={reset}>MAKE ANOTHER <span>↻</span></button>
+            {studioSnapshot ? (
+              <p className="share-status">START A NEW CODEX SESSION TO MAKE ANOTHER.</p>
+            ) : (
+              <button className="text-button" onClick={reset}>MAKE ANOTHER <span>↻</span></button>
+            )}
           </motion.main>
         )}
       </AnimatePresence>
@@ -332,14 +413,19 @@ function Experience() {
   );
 }
 
-function Making({ artDirection, error, onRetry, onEdit }: {
+function Making({ artDirection, error, studioStatus, onRetry, onEdit }: {
   artDirection: ReturnType<typeof useCreation>["artDirection"];
   error: RecordRenderError | null;
+  studioStatus?: StudioBrowserSnapshot["status"]["state"];
   onRetry: () => void;
   onEdit: () => void;
 }) {
   const [line, setLine] = useState(0);
-  const lines = ["Finding the right marks.", "Leaving a little chaos.", "Almost yours."];
+  const studioLine = studioStatus === "request_ready" ? "Choices saved. Waiting for Codex."
+    : studioStatus === "generating_outer_art" ? "Building the development outer art."
+      : studioStatus === "compositing" ? "Protecting your image and setting every mark."
+        : undefined;
+  const lines = studioLine ? [studioLine, studioLine, studioLine] : ["Finding the right marks.", "Leaving a little chaos.", "Almost yours."];
   useEffect(() => {
     const timer = window.setInterval(() => setLine((value) => Math.min(2, value + 1)), 700);
     return () => window.clearInterval(timer);
