@@ -1,411 +1,110 @@
-# PRODUCT.md
+# Aftermark Product
 
-# Product Definition
+## Identity
 
-## Brand
+**Aftermark** — **Made to keep.**
 
-**Aftermark**
+Aftermark is an AI-assisted digital gift and collectible that turns something a user loves into a one-of-one digital record. It is not a generic image generator, prompt box, photo filter, personality test, or album-cover copier.
 
-Brand line:
-
-> Made to keep.
-
-Working meaning:
-
-> A mark left after a moment has passed.
-
-Aftermark is the brand. The first product experience is the digital doodle record described below.
-
-## Working concept
-An AI-assisted digital gift and collectible experience that turns something the user loves into a one-of-one record.
-
-The first form factor is a **digital doodle record**.
-
-The record is a container for:
-
-- a photo
-- a memory
-- a person
-- a place
-- artwork
-- a favorite moment
-- a feeling
-- a short personal message
-
-Music can inspire the experience, but the product is not limited to music and should not depend on copying recognizable album artwork.
-
-## Core promise
-
-Brand-level promise:
-
-> Made to keep.
-
-Product-level hook:
-
-> Turn something you love into a record.
-
-The user should feel:
-
-- “This is mine.”
-- “I helped shape this.”
-- “It feels collectible.”
-- “I want to save it.”
-- “I want to show someone.”
-- “I want to try again with different choices.”
-
-## Product category
-This is not primarily:
-
-- a photo filter
-- a style-transfer tool
-- a quiz
-- a music player
-- an album-cover generator
-- a generic prompt box
-
-It is:
-
-**User Input → Guided Art Direction → Style Grammar → Digital Gift**
-
-## Participation principle
-Do not automatically decide everything that could become a meaningful lightweight user choice.
-
-The product should not behave like:
-
-`upload → wait → receive AI image`
-
-It should behave like:
+The experience is:
 
 `upload → participate → anticipate → reveal`
 
-User choices are part of the emotional value of the product.
+The user should feel that the result is theirs, that their choices shaped it, and that it is worth saving or sharing.
 
-A normal session should contain:
-
-- 1 image upload
-- 3–5 lightweight choices
-- 1 optional short text input
-- 1 final generate action
-
-Target interaction time before generation:
-
-**20–45 seconds**
-
-The user should never need to understand prompt engineering, rendering parameters, saturation, denoise values, model names, or other technical concepts.
-
-## Visual product principle
+## Product principles
 
 ### Record first
-The final composition must read as a collectible record before it reads as an AI-generated poster.
 
-Visual hierarchy:
+The final composition must read in this order:
 
-1. Record
-2. Doodle / marks
-3. User image
+1. collectible record
+2. doodle and paint marks
+3. user image
+
+The result must not read first as an AI poster.
 
 ### The center belongs to the user
-The uploaded image is preserved in the center label.
 
-The center label should generally occupy **28–32% of the record diameter**.
+The original upload remains recognizable in a protected circular center, generally 28–32% of the record diameter. Crop, scale, light tonal adjustment, subtle grain, and color harmonization are allowed. Redrawing identity, replacing faces, adding/removing people, or converting the source into a different character or style are not.
 
-Allowed:
+### Participation matters
 
-- crop
-- scale
-- circular mask
-- light exposure adjustment
-- light contrast adjustment
-- subtle grain
-- subtle color harmonization
+A normal session uses one image, 3–5 lightweight visual choices, one optional short message, and one final generate action. Choices must influence the artwork without exposing prompts, models, denoise values, or other technical controls. Do not collapse the experience into `upload → wait → image`.
 
-Not allowed:
+### Keep the message personal and small
 
-- changing identity
-- re-drawing faces
-- adding or removing people
-- turning the source image into a different character
-- replacing the source image with an AI reinterpretation
+The user may leave one optional short message, up to 30 words or a reasonable equivalent for CJK languages. It is application-rendered, not model-rendered, and should feel like leaving a mark rather than filling in a prompt.
 
-The central image should remain recognizably the user's original source.
+Aftermark may add one or two restrained marginal phrases. They must be short, image/theme relevant, and never invent memories, relationships, confessions, or motivational copy.
 
-### The outer record belongs to the art system
-The outer vinyl area is the main creative canvas.
+## Current production path
 
-It may contain:
+Currently production-supported:
 
-- acrylic paint marker strokes
-- handwriting
-- symbols
-- stickers
-- scratches
-- tape
-- stamps
-- arrows
-- small doodles
-- short AI-written notes
-- date
-- catalog number
-- collectible metadata
+- Style World: **AFTER DARK** / `neon_scribble`
+- Doodle Intensity: **LEAVE A TRACE** / `medium`
+- Material: **CLASSIC** / `classic`
+- Composition: **THE WORDS** / `text_led`
+- Composition: **THE MARKS** / `motif_led`
 
-## First three Style Worlds
+Unsupported choices may remain visible in Local Studio only when disabled and clearly labeled `COMING LATER`. The runtime must never silently replace a visible selection.
 
-### 1. After Dark
-Internal style key:
+## Planned product vocabulary
 
-`neon_scribble`
+These names remain part of the long-term product language but are not production rendering promises today.
 
-Character:
+Style Worlds coming later:
 
-- black vinyl
-- acrylic paint marker
-- energetic handwriting
-- bold but handmade
-- personal
-- youthful
-- colorful accents
-- not cyberpunk UI
+- **IN A DRAWER** / `analog_memory`: tape, stamps, worn labels, aged paper, archival warmth
+- **SOMEWHERE IN A DREAM** / `dream_archive`: translucent layers, haze, clouds, stars, soft glow
 
-### 2. In a Drawer
-Internal style key:
+Doodle intensities coming later:
 
-`analog_memory`
+- `low`
+- `high`
 
-Character:
+Materials coming later:
 
-- aged paper
-- tape
-- handwritten notes
-- stamps
-- worn labels
-- faded textures
-- archival / nostalgic feeling
+- `clear`: transparent vinyl with physical grooves and refraction
+- `smoke`: irregular translucent dark marbling
+- `aurora`: reflected holographic diffraction, never a flat rainbow gradient
+- `pearl`: clear-white pearlescence with fine sparkle and subtle color shift
 
-### 3. Somewhere in a Dream
-Internal style key:
+Do not implement or expose these as working production choices until a task explicitly expands the supported path.
 
-`dream_archive`
+## Text and collectible identity
 
-Character:
+The application owns all literal text. Typical deterministic elements include:
 
-- translucent layers
-- soft glow
-- clouds
-- stars
-- floating marks
-- haze
-- dreamlike softness
-
-Phase 1 should fully art-direct `neon_scribble`.
-The other two worlds should exist in the UI/data model but may initially use simpler placeholder visual treatment.
-
-## Materials
-Phase 1 supports five record surfaces:
-
-- `classic`
-- `clear`
-- `smoke`
-- `aurora`
-- `pearl`
-
-### Classic
-Traditional dark vinyl with visible grooves and restrained gloss.
-
-### Clear
-Transparent vinyl that can reveal part of the sleeve beneath it.
-
-### Smoke
-Semi-transparent black/gray vinyl with smoky variation.
-
-### Aurora
-Iridescent / holographic diffraction visible mainly in reflected light.
-Do not render it as a flat rainbow gradient.
-
-### Pearl
-Milky, pearlescent, semi-translucent surface with subtle color shift.
-
-## User control
-The user should shape the artwork through visual, intuitive decisions.
-
-Do not expose technical settings.
-
-The three required art-direction decisions in Phase 1 are:
-
-1. Style World
-2. Doodle Intensity
-3. Record Material
-
-The architecture must support up to two additional lightweight choice screens later without restructuring the flow.
-
-Possible future choice categories include:
-
-- color direction
-- mark language
-- mood modifier
-- relationship / recipient context
-
-Do not add them to Phase 1 unless explicitly requested.
-
-## User message
-The user may leave exactly one short message.
-
-Maximum:
-
-- 30 words for space-separated languages
-- use a reasonable equivalent character limit for languages such as Chinese or Japanese
-
-The field may be optional.
-
-Do not make the UI feel like a prompt box.
-
-Presentation concept:
-
-> LEAVE ONE MARK.
-
-Examples:
-
-- `summer never ended`
-- `for L.`
-- `17 Aug`
-- `see you next summer`
-- `we were here`
-
-## AI-written text
-AI may add **1–2 short phrases** in addition to the user's message.
-
-Rules:
-
-- short
-- secondary
-- not emotionally presumptuous
-- not long motivational copy
-- not fake confessions
-- not paragraphs
-- should feel like marginal notes
-
-Good examples:
-
-- `salt air`
-- `late light`
-- `good days`
-- `same sea`
-
-## Collectible metadata
-Every record should contain deterministic collectible metadata such as:
-
+- user message
+- one or two restrained marginal phrases
 - `ONE OF ONE`
 - date
 - catalog number
 - optional `SIDE A`
 
-Catalog example:
+Catalog numbers provide collectible identity rather than global database uniqueness. A Neon Scribble example is `NS-260910-037`.
 
-`NS-260910-037`
+Reveal includes a **Record Type** describing this artwork instance, not the user or a personality result. Examples include `NEON RIOT`, `AFTERGLOW`, `CLEAR SIGNAL`, and `MIDNIGHT COLOR`.
 
-Style codes:
+## Outputs and reveal
 
-- `NS` = Neon Scribble
-- `AM` = Analog Memory
-- `DA` = Dream Archive
+The current pipeline produces:
 
-Global uniqueness is not required in Phase 1.
-The purpose is collectible identity, not database identity.
+- a 2048×2048 main record artwork
+- a separately composed 1080×1920 share card
 
-## Record Type
-The Reveal includes a name for the resulting artwork.
+Reveal should feel like the payoff after participation and anticipation. The share card should be understandable in a screenshot and support the loop `see → want to try → make → share`. It must not be a simple crop of the square artwork.
 
-This is a **Record Type**, not a personality result.
+## Experience quality
 
-It should describe this instance of the artwork.
+- mobile first, desktop responsive
+- minimal, editorial, object-focused UI
+- large typography and generous whitespace
+- calm transitions with an expressive reveal
+- no dashboard layout, dense navigation, model selectors, technical controls, or generic AI branding
 
-It must not always equal the Style World.
+## Current non-goals
 
-Example names:
-
-Neon family:
-- SOFT STATIC
-- AFTERGLOW
-- CLEAR SIGNAL
-- ELECTRIC SUMMER
-- NEON RIOT
-- MIDNIGHT COLOR
-
-Analog family:
-- FADED NOTE
-- OLD HABITS
-- LAST POSTCARD
-- SUNDAY DRAWER
-
-Dream family:
-- SOFT ORBIT
-- DREAM STATIC
-- PALE MOON
-- AFTER DREAM
-
-Phase 1 may use a deterministic mapping + curated word bank.
-Later versions may use AI naming.
-
-## Output
-Phase 1 experience should prepare for three outputs:
-
-1. Main artwork — 1:1
-2. Record close-up — 1:1
-3. Share card — 9:16
-
-Preferred final dimensions when real rendering is connected:
-
-- main: 2048×2048
-- share card: 1080×1920
-
-The 9:16 share card must be independently composed.
-Do not simply crop the square artwork.
-
-## Share behavior
-The share card should support the social loop:
-
-`see result → want to try → make one → share result`
-
-The result should be visually understandable in a screenshot.
-
-## Tone and UI character
-Desired UI qualities:
-
-- mobile-first
-- minimal
-- large typography
-- generous whitespace
-- object-focused
-- calm transitions
-- emotionally expressive without becoming sentimental
-- closer to a polished product launch / editorial experience than an AI SaaS dashboard
-
-Avoid:
-
-- dashboard layout
-- dense nav bars
-- model selectors
-- technical settings
-- pricing tables
-- prompt-engineering language
-- generic gradient-heavy AI branding
-
-## MVP non-goals
-Do not implement in Phase 1:
-
-- authentication
-- account profiles
-- payments
-- social graph
-- public feed
-- permanent gallery
-- collaborative editing
-- advanced canvas editor
-- drag-and-drop doodle placement
-- Blender workflow
-- AR
-- WebGL-based 3D
-- full video generation
-- music playback
-- album lookup
-- lyric scraping
-- copyrighted album-cover replication
+Unless explicitly introduced by a future task, do not add authentication, payments, profiles, databases, a social feed, permanent galleries, collaborative editing, advanced canvas tooling, WebGL/3D, AR, video generation, music playback, album lookup, lyric scraping, or copyrighted album-cover replication.

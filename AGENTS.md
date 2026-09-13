@@ -11,57 +11,44 @@ The product is not a generic AI image generator and not a personality test. It i
 
 **upload → participate → anticipate → reveal**
 
-## Read first
-Before making product, UI, architecture, or visual decisions, read:
+## Read order
 
-- `docs/PRODUCT.md`
-- `docs/PHASE-1.md`
-- `docs/styles/neon-scribble.md`
+Read only what the current task needs:
 
-Treat those files as the source of truth.
+1. `SKILL.md` when operating the Aftermark Skill.
+2. `docs/PRODUCT.md` for product behavior.
+3. `docs/ARCHITECTURE.md` for system boundaries.
+4. `docs/ART-DIRECTION.md` for generation or composition work.
+5. `docs/RUNTIME.md` for Studio, session, or debugging work.
+6. `docs/CURRENT-TASK.md` for the current implementation objective.
 
-## Phase 1 constraints
-Do not add features that are not in the specs.
-
-For Phase 1:
-
-- no login
-- no payments
-- no database
-- no social feed
-- no permanent gallery
-- no WebGL
-- no complex 3D
-- no backend-heavy architecture unless required for the mock renderer
-- mobile first
-- desktop responsive
-- preserve the user's original center image
-- keep the user's interaction meaningful
-- do not collapse the experience into `upload → generate`
+Major frozen choices live in `docs/DECISIONS.md`. The provider benchmark is documented separately in `benchmarks/README.md` and is not the normal Skill path.
 
 ## Interaction principle
 A normal creation session should require:
 
 - 1 image upload
 - 3–5 lightweight choices
-- 1 short text input
+- 1 optional short text input
 - 1 final generate action
 
 Choices must influence the artwork meaningfully while hiding technical image-generation parameters.
 
-## Engineering principle
-Keep the rendering layer replaceable.
+## Product and engineering principles
 
-Use a renderer interface so Phase 1 can run with a mock renderer and Phase 2 can later connect a real AI image-generation pipeline without rewriting the product flow.
+- Prefer the smallest implementation consistent with the current source of truth.
+- Do not invent product features or abstractions for unimplemented futures.
+- Preserve the user's original image in the protected center.
+- Keep the creation flow participatory; do not collapse it into `upload → generate`.
+- Build mobile first and keep desktop responsive.
+- Keep product UI polished, calm, and free of provider/model controls.
 
 ## Working style
 When requirements are ambiguous:
 
-1. Prefer the smallest implementation consistent with the specs.
-2. Do not invent new product features.
-3. Surface unresolved visual/product decisions instead of silently choosing for the user.
-4. Keep components small and readable.
-5. Before declaring a task complete, run the app, test the full mobile flow, and report:
+1. Surface unresolved visual or product decisions instead of silently choosing for the user.
+2. Keep components small and readable.
+3. Validate in proportion to the change and report:
    - what was implemented
    - what remains
    - any deviations from the spec

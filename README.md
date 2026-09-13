@@ -6,7 +6,7 @@ Aftermark is a mobile-first digital gift experience that turns a user-provided i
 
 `upload → participate → anticipate → reveal`
 
-This repository contains the Phase 1 prototype. It uses a deterministic frontend mock renderer and does not call a production AI service.
+Aftermark is now a Skill-first local Studio workflow using Codex built-in image generation for outer art and deterministic application compositing.
 
 ## Run locally
 
@@ -24,19 +24,20 @@ npm run typecheck
 npm run build
 ```
 
-## Phase 1 flow
+## Current Studio flow
 
 1. Landing
 2. Upload
 3. Style World
 4. Doodle Intensity
-5. Record Material
-6. Leave One Mark
-7. Making
-8. Reveal
-9. Share
+5. Composition Mode
+6. Record Material
+7. Leave One Mark
+8. Making
+9. Reveal
+10. Share
 
-The three visual choices require an explicit user tap. The optional message is limited to 30 space-separated words or 30 CJK characters. The uploaded image is used unchanged in the circular center label.
+The four visual choices require an explicit user tap. The optional message is limited to 30 space-separated words or 30 CJK characters. The uploaded image is used unchanged in the circular center label.
 
 ## Architecture
 
@@ -54,6 +55,4 @@ The creation flow is modeled as ordered screens, so up to two additional lightwe
 
 ## Scope
 
-Phase 1 intentionally has no login, payments, database, social feed, permanent gallery, WebGL, complex 3D, or production AI generation.
-
-See [docs/PHASE1-COMPLETION.md](docs/PHASE1-COMPLETION.md) for the delivery checklist and verification record.
+The current Skill-first workflow intentionally has no login, payments, database, social feed, permanent gallery, WebGL, or complex 3D.
