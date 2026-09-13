@@ -96,6 +96,7 @@ async function main(): Promise<void> {
       recordType,
       catalogNumber,
       renderedAt,
+      generator: "development_placeholder" as const,
     };
     await writeStudioStatus(context.projectRoot, context.session, "complete", "Your Aftermark record is ready.", output);
     await log(context.projectRoot, "Studio pipeline completed with the development outer-art placeholder.");

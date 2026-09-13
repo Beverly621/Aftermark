@@ -83,14 +83,16 @@ export function studioResult(snapshot: StudioBrowserSnapshot): RecordRenderResul
       width: 2048,
       height: 2048,
     },
-    renderMode: "development",
-    providerDiagnostics: {
-      providerId: "development-svg-outer-art-v1",
-      modelId: "deterministic-svg-v1",
-      latencyMs: 0,
-      costUsd: 0,
-      costKind: "actual",
-    },
+    renderMode: output.generator === "codex_native" ? "production" : "development",
+    ...(output.generator === "codex_native" ? {} : {
+      providerDiagnostics: {
+        providerId: "development-svg-outer-art-v1",
+        modelId: "deterministic-svg-v1",
+        latencyMs: 0,
+        costUsd: 0,
+        costKind: "actual" as const,
+      },
+    }),
   };
 }
 

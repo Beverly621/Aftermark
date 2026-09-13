@@ -11,7 +11,9 @@
     "test:node": "node --conditions=react-server --import tsx --test tests/*.test.ts",
     "test:runtime": "python3 -m unittest discover -s tests/runtime -p 'test_*.py'",
     "benchmark:providers": "node --conditions=react-server --import tsx scripts/run-provider-benchmark.ts",
-    "studio:process": "node --conditions=react-server --import tsx scripts/process-studio-request.ts",
+    "studio:prepare": "node --conditions=react-server --import tsx scripts/prepare-native-generation.ts",
+    "studio:finalize": "node --conditions=react-server --import tsx scripts/finalize-native-generation.ts",
+    "studio:process:development": "node --conditions=react-server --import tsx scripts/process-studio-request.ts",
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

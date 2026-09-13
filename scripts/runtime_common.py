@@ -16,7 +16,10 @@ STATUS_SCHEMA = "aftermark-status-v1"
 STATUS_STATES = {
     "waiting_for_user",
     "request_ready",
+    "analyzing_source",
+    "planning_art",
     "generating_outer_art",
+    "validating_outer_art",
     "compositing",
     "complete",
     "error",

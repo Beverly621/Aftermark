@@ -67,6 +67,14 @@ When requirements are ambiguous:
    - any deviations from the spec
    - any decisions that require human review
 
+## Lean execution
+
+- Prefer updating an existing source of truth over creating a new document; one concept should have one source of truth.
+- Do not create progress or completion Markdown files by default.
+- Prefer tests and executable contracts over duplicated prose.
+- Avoid abstractions for unimplemented future features.
+- Normal tasks should usually change code and at most one existing design/runtime document.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

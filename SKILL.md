@@ -7,9 +7,9 @@ description: Create a one-of-one Aftermark digital record through the local Afte
 
 Run the Aftermark workflow from this skill directory. Keep every user upload and generated result in a separate user-owned project; never place them in this reusable skill directory.
 
-## Task 2C01 workflow
+## Task 2C02 workflow
 
-Task 2C01 proves the local handshake with a deterministic development outer-art placeholder. Do not invoke image generation or any paid provider during this workflow.
+Task 2C02 uses Codex built-in image generation for one outer-art ingredient. It does not use a creator API key, call a provider adapter, or ask an image model to render the final record.
 
 1. Choose an absolute project path outside this skill directory.
 2. Create or resume it:
@@ -30,13 +30,33 @@ Task 2C01 proves the local handshake with a deterministic development outer-art 
    python3 scripts/wait_for_request.py --project <absolute-project-path>
    ```
 
-5. After the waiter exits successfully, run the local development pipeline:
+5. Mark source analysis as active, visually inspect the project-local source image, and write `<project>/analysis.json`. Describe only visible color, motifs, and mood; do not invent personal facts. Include the SHA-256 of the exact source file. Do not pass the source image to image generation.
 
    ```bash
-   npm run studio:process -- --project <absolute-project-path>
+   python3 scripts/set_status.py --project <absolute-project-path> --state analyzing_source --message "Reading the source image."
    ```
 
-6. Verify `status.json` is `complete` and both `output/record.png` and `output/share-card.png` exist. Open the running Studio so it can reveal and save the real project output.
+   Use `schemaVersion: "aftermark-source-analysis-v1"` with exactly: `sessionId`, `sourceImageSha256`, a compact `sourceSummary`, `palette` (`primary`, `neutral`, `surprise`; 3–5 distinct hex colors total), 3–6 `motifs` (`name`, `visualShorthand`, `salience`), 2–4 `mood` values, and `avoidMotifs`.
+
+6. Validate the analysis and compile the versioned, privacy-safe generation plan:
+
+   ```bash
+   npm run studio:prepare -- --project <absolute-project-path>
+   ```
+
+7. Read `generation-plan.json`. Load the installed system `imagegen` Skill, then use Codex built-in image generation with `compiledPrompt`. Generate one image without using the source photo as an edit/reference target. Do not use an API/CLI fallback.
+
+8. Inspect the result for real transparency and readable or pseudo-readable text. Copy the selected generated PNG from the built-in generated-image location into the user project as `assets/outer-art.raw.png`; the project must not depend on a file that exists only below `$CODEX_HOME/generated_images`.
+
+9. Normalize, validate, mask, and deterministically composite it:
+
+   ```bash
+   npm run studio:finalize -- --project <absolute-project-path> --attempt 1 --visual-text-check pass
+   ```
+
+   Pass `fail` if visual inspection finds readable/pseudo-readable text. If the command reports a retry correction, make exactly one targeted built-in generation retry, replace `assets/outer-art.raw.png`, and rerun with `--attempt 2`. Never make a third generation call for the record.
+
+10. Verify `status.json` is `complete`; `analysis.json`, `generation-plan.json`, `outer-art-qa.json`, `assets/outer-art.raw.png`, `assets/outer-art.png`, `output/record.png`, and `output/share-card.png` exist. Open the running Studio so it reveals the real project output.
 
 If `request.json` already exists, validate it and continue only after the matching status has left `waiting_for_user`; do not ask the user to repeat valid choices. If `status.json` is already `complete` and both outputs exist, reopen Studio directly at Reveal.
 
@@ -45,8 +65,11 @@ If `request.json` already exists, validate it and continue only after the matchi
 - Bind Studio only to `127.0.0.1`; use the launcher's preferred-port fallback.
 - Treat `aftermark-session.json`, `request.json`, and `status.json` as validated protocol files. Reject mismatched session IDs and unsafe paths.
 - The browser writes only through the localhost request bridge. It never calls Codex or an image provider.
-- In Task 2C01 Studio mode, only `neon_scribble`, `medium`, and `classic` are selectable; other visible options are disabled as `COMING LATER`. Both composition modes remain selectable.
-- Task 2C01 uses `DevelopmentOuterArtProvider`; keep OpenAI, Gemini, FLUX, and benchmark infrastructure frozen and unused.
+- Only `neon_scribble`, `medium`, and `classic` are selectable; other visible options stay disabled as `COMING LATER`. Both composition modes remain selectable.
+- Built-in generation owns only transparent paint marks. It receives no literal user message, marginal phrase, date, catalog number, metadata, source photo, or final-record task.
+- `assets/outer-art.raw.png` is the selected built-in result. `assets/outer-art.png` is the normalized 2048×2048 RGBA ingredient with a deterministic outer-circle and protected-center mask.
+- The original 2C01 development provider remains available only as the explicit `npm run studio:process:development` fallback for regression/debugging. Do not use it for a 2C02 result.
+- Keep OpenAI, Gemini, FLUX, and benchmark infrastructure frozen and unused.
 - Preserve the original source image in the protected center. The application owns user text, AI phrases, date, catalog number, and other deterministic metadata.
 - Do not modify `README.md` before Phase 2C05.
 

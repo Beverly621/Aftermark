@@ -7,7 +7,10 @@ export const STUDIO_STATUS_SCHEMA = "aftermark-status-v1" as const;
 export const STUDIO_STATUS_STATES = [
   "waiting_for_user",
   "request_ready",
+  "analyzing_source",
+  "planning_art",
   "generating_outer_art",
+  "validating_outer_art",
   "compositing",
   "complete",
   "error",
@@ -63,6 +66,7 @@ export interface AftermarkStudioOutput {
   recordType: string;
   catalogNumber: string;
   renderedAt: string;
+  generator?: "development_placeholder" | "codex_native";
 }
 
 export interface AftermarkStudioStatus {
@@ -156,7 +160,11 @@ export function parseStudioStatus(value: unknown, session: AftermarkStudioSessio
 
 function parseStudioOutput(value: unknown): AftermarkStudioOutput {
   const input = objectValue(value, "status output");
-  assertExactKeys(input, ["recordPath", "shareCardPath", "outerArtPath", "recordType", "catalogNumber", "renderedAt"], "status output");
+  const required = ["recordPath", "shareCardPath", "outerArtPath", "recordType", "catalogNumber", "renderedAt"];
+  const allowed = new Set([...required, "generator"]);
+  if (required.some((key) => !(key in input)) || Object.keys(input).some((key) => !allowed.has(key))) {
+    throw new StudioProtocolError("status output has missing or unexpected fields.");
+  }
   if (input.recordPath !== "output/record.png" || input.shareCardPath !== "output/share-card.png" || input.outerArtPath !== "assets/outer-art.png") {
     throw new StudioProtocolError("Studio output contains an unsafe path.");
   }
@@ -164,6 +172,9 @@ function parseStudioOutput(value: unknown): AftermarkStudioOutput {
     throw new StudioProtocolError("Studio output metadata is invalid.");
   }
   assertIsoTimestamp(input.renderedAt, "Output renderedAt");
+  if (input.generator !== undefined && input.generator !== "development_placeholder" && input.generator !== "codex_native") {
+    throw new StudioProtocolError("Studio output generator is invalid.");
+  }
   return input as unknown as AftermarkStudioOutput;
 }
 

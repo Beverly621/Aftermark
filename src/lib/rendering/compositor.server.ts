@@ -49,14 +49,31 @@ export class SharpFinalRecordCompositor implements FinalRecordCompositor {
   }
 }
 
-async function createProtectedOuterRing(outerBuffer: Buffer): Promise<Buffer> {
+export async function createProtectedOuterRing(outerBuffer: Buffer): Promise<Buffer> {
+  // Native outer art is a portable 2048px asset whose record circle is 96% of
+  // its canvas. Map that circle onto the compositor's record geometry before
+  // applying the final structural mask.
+  const ingredientSize = Math.round(RECORD_DIAMETER / 0.96);
+  const ingredient = await sharp(outerBuffer, { failOn: "error" })
+    .resize(ingredientSize, ingredientSize, { fit: "fill" })
+    .ensureAlpha()
+    .png()
+    .toBuffer();
+  const positioned = await sharp({
+    create: { width: MAIN_ARTWORK_SIZE, height: MAIN_ARTWORK_SIZE, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .composite([{
+      input: ingredient,
+      left: RECORD_CENTER.x - Math.floor(ingredientSize / 2),
+      top: RECORD_CENTER.y - Math.floor(ingredientSize / 2),
+    }])
+    .png()
+    .toBuffer();
   const ringMask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${MAIN_ARTWORK_SIZE}" height="${MAIN_ARTWORK_SIZE}" viewBox="0 0 ${MAIN_ARTWORK_SIZE} ${MAIN_ARTWORK_SIZE}">
     <mask id="ring"><rect width="100%" height="100%" fill="black"/><circle cx="${RECORD_CENTER.x}" cy="${RECORD_CENTER.y}" r="${RECORD_DIAMETER / 2}" fill="white"/><circle cx="${RECORD_CENTER.x}" cy="${RECORD_CENTER.y}" r="${CENTER_LABEL_DIAMETER / 2}" fill="black"/></mask>
     <rect width="100%" height="100%" fill="white" mask="url(#ring)"/>
   </svg>`);
-  return sharp(outerBuffer, { failOn: "error" })
-    .resize(MAIN_ARTWORK_SIZE, MAIN_ARTWORK_SIZE, { fit: "fill" })
-    .ensureAlpha()
+  return sharp(positioned)
     .composite([{ input: ringMask, blend: "dest-in" }])
     .png()
     .toBuffer();

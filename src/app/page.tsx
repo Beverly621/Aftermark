@@ -422,7 +422,10 @@ function Making({ artDirection, error, studioStatus, onRetry, onEdit }: {
 }) {
   const [line, setLine] = useState(0);
   const studioLine = studioStatus === "request_ready" ? "Choices saved. Waiting for Codex."
-    : studioStatus === "generating_outer_art" ? "Building the development outer art."
+    : studioStatus === "analyzing_source" ? "Reading the shape and color of your source."
+    : studioStatus === "planning_art" ? "Planning the marks."
+    : studioStatus === "generating_outer_art" ? "Building the outer art."
+    : studioStatus === "validating_outer_art" ? "Checking every mark."
       : studioStatus === "compositing" ? "Protecting your image and setting every mark."
         : undefined;
   const lines = studioLine ? [studioLine, studioLine, studioLine] : ["Finding the right marks.", "Leaving a little chaos.", "Almost yours."];

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -174,12 +177,119 @@ class SkillRuntimeTests(unittest.TestCase):
             for relative in ("assets/outer-art.png", "output/record.png", "output/share-card.png"):
                 self.assertGreater((project / relative).stat().st_size, 1000)
 
+    def test_native_prepare_and_finalize_resume_safe_without_provider_credentials(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="aftermark-native-") as temporary:
+            project = self.create_project(temporary)
+            request = self.write_request(project)
+            self.write_status(project, "analyzing_source")
+            source = (project / request["sourceImagePath"]).read_bytes()
+            analysis = {
+                "schemaVersion": "aftermark-source-analysis-v1",
+                "sessionId": request["sessionId"],
+                "sourceImageSha256": hashlib.sha256(source).hexdigest(),
+                "sourceSummary": "daylight coastal cliff and sea",
+                "palette": {
+                    "primary": ["#4c91ae", "#d4c49b"],
+                    "neutral": ["#f1eee6"],
+                    "surprise": ["#ff5b9e"],
+                },
+                "motifs": [
+                    {"name": "wave", "visualShorthand": "single loose curling wave line", "salience": "high"},
+                    {"name": "cliff", "visualShorthand": "broken vertical contour", "salience": "high"},
+                    {"name": "bird", "visualShorthand": "tiny two stroke bird", "salience": "medium"},
+                ],
+                "mood": ["open air", "late summer", "bright"],
+                "avoidMotifs": [],
+            }
+            atomic_write_json(project / "analysis.json", analysis)
+            environment = os.environ.copy()
+            for name in list(environment):
+                if "API_KEY" in name:
+                    environment.pop(name, None)
+            prepared = subprocess.run(
+                ["npm", "run", "studio:prepare", "--", "--project", str(project)],
+                cwd=SKILL_ROOT,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            plan = json.loads((project / "generation-plan.json").read_text(encoding="utf-8"))
+            self.assertNotIn(request["userMessage"], plan["compiledPrompt"])
+            self.assertEqual(plan["assetRole"], "outer_art_overlay")
+            (project / "assets/outer-art.raw.png").write_bytes(test_outer_art_png())
+
+            finalized = subprocess.run(
+                ["npm", "run", "studio:finalize", "--", "--project", str(project), "--attempt", "1", "--visual-text-check", "pass"],
+                cwd=SKILL_ROOT,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=90,
+            )
+            self.assertEqual(finalized.returncode, 0, finalized.stderr)
+            status = json.loads((project / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual(status["state"], "complete")
+            qa = json.loads((project / "outer-art-qa.json").read_text(encoding="utf-8"))
+            self.assertTrue(qa["accepted"])
+            self.assertEqual(qa["attemptCount"], 1)
+            for relative in ("analysis.json", "generation-plan.json", "assets/outer-art.raw.png", "assets/outer-art.png", "output/record.png", "output/share-card.png"):
+                self.assertGreater((project / relative).stat().st_size, 100)
+
+            resumed = subprocess.run(
+                ["npm", "run", "studio:finalize", "--", "--project", str(project), "--attempt", "1", "--visual-text-check", "pass"],
+                cwd=SKILL_ROOT,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            self.assertEqual(resumed.returncode, 0, resumed.stderr)
+            self.assertTrue(json.loads(last_json_line(resumed.stdout))["resumed"])
+
+            third_attempt = subprocess.run(
+                ["npm", "run", "studio:finalize", "--", "--project", str(project), "--attempt", "3", "--visual-text-check", "pass"],
+                cwd=SKILL_ROOT,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            self.assertNotEqual(third_attempt.returncode, 0)
+            self.assertIn("--attempt <1|2>", third_attempt.stderr)
+
     def test_preferred_port_falls_back_when_occupied(self) -> None:
         occupied = MagicMock()
         occupied.__enter__.return_value.bind.side_effect = OSError("occupied")
         fallback = MagicMock()
         with patch("launch_studio.socket.socket", side_effect=[occupied, fallback]):
             self.assertEqual(available_port(3100), 3101)
+
+
+def test_outer_art_png() -> bytes:
+    width = height = 64
+    rows = []
+    for y in range(height):
+        row = bytearray([0])
+        for x in range(width):
+            opaque = 8 <= x <= 50 and not (22 <= x <= 42 and 22 <= y <= 42)
+            row.extend((255, 91, 158, 255 if opaque else 0))
+        rows.append(bytes(row))
+    raw = b"".join(rows)
+
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload) & 0xFFFFFFFF)
+
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b"")
+
+
+def last_json_line(output: str) -> str:
+    return next(line for line in reversed(output.splitlines()) if line.startswith("{"))
 
 
 if __name__ == "__main__":
