@@ -56,7 +56,7 @@ export interface NativeGenerationPlan {
     protectedCenterDiameterRatio: 0.3;
     outerCircleDiameterRatio: 0.96;
     heroLetteringReserved: boolean;
-    heroLetteringCorridor: "lower-right curved arc" | "none";
+    heroLetteringCorridor: "natural quiet pocket" | "none";
     heroMotifMaxCount: 1;
     asymmetry: "strong";
   };
@@ -126,19 +126,13 @@ export function compileNativeGenerationPlan(
   const motifs = analysis.motifs.map((motif) => motif.name);
   const motifLanguage = analysis.motifs.map((motif) => motif.visualShorthand).join("; ");
   const modeInstruction = request.compositionMode === "text_led"
-    ? "Reserve one broad, loose, curved lower-right hero-lettering corridor across the annulus. Keep it substantially clear so Aftermark can add precise typography later. Marks may frame, underline, point toward, or orbit the corridor, but draw no letters or pseudo-letter shapes."
-    : "Let one source-derived thematic motif lead without becoming a polished standalone illustration. Build the rest from smaller source-derived symbols, arrows, circles, stars, short abstract strokes, and micro marks.";
+    ? "Leave one naturally quieter pocket where Aftermark can later place application-owned lettering. Let nearby marks frame it organically; it should not look like a deliberately empty graphic-design panel, and you must not draw the lettering."
+    : "Let source-inspired doodles and gestures lead naturally. Most marks should remain loose and fragmentary; a more prominent motif may emerge if it helps the composition, but do not turn the result into a polished standalone illustration.";
   const compiledPrompt = [
-    "Asset role: Create a transparent raster overlay of hand-drawn acrylic paint-marker doodles for the outer area of a collectible black vinyl record. This is NOT the final record.",
-    "Material/mark language: Opaque POSCA-like acrylic paint marker. Pigment-rich matte marks intended to sit over deep glossy black vinyl. Slightly irregular edges, pressure variation, occasional repeated strokes, subtle hand wobble. No glow.",
-    "Circular composition: Compose marks around a centered vinyl annulus. Keep the central 30% diameter visually quiet and keep marks inside the outer circular record area. Aftermark will enforce the mask deterministically.",
-    "Density: Medium / LEAVE A TRACE. Rich but breathable. One large thematic motif maximum, 4–7 medium marks, 10–18 micro marks, strongly irregular and asymmetric spacing, with visible negative space.",
-    `Palette: ${colors.join(", ")}. Use source-derived colors as the main family, neutrals as structure, and one restrained surprise accent. Avoid equal rainbow distribution.`,
-    `Motif vocabulary: ${motifLanguage}.`,
-    `Mood: ${analysis.mood.join(", ")}.`,
-    `Mode: ${modeInstruction}`,
-    "Output: Transparent background. Paint marks only.",
-    "Hard constraints: No photo, portrait, reproduced source image, vinyl mockup, sleeve, final record, words, letters, numbers, labels, logos, signatures, or watermark. No chalk, wax-crayon look, smooth vector illustration, digital neon glow, cyberpunk HUD, generic sticker pack, or evenly spaced radial ring.",
+    "Create a lively, personal set of transparent acrylic/POSCA-like paint-marker marks for an Aftermark vinyl record. Make them feel handmade, expressive, imperfect, and layered, with natural variation in scale, pressure, rhythm, and placement.",
+    `Work from this source-inspired palette: ${colors.join(", ")}. Reinterpret these visual cues freely as doodles, fragments, gestures, symbols, and strokes: ${motifLanguage}. Let the mood feel ${analysis.mood.join(", ")}. Do not reconstruct the source as one complete scene. Keep the result rich but breathable and accumulated rather than neatly arranged.`,
+    modeInstruction,
+    "Transparent paint marks only. No readable or pseudo-readable text, polished scenic illustration, neat radial wreath, sticker-pack layout, smooth vector look, or digital neon/HUD styling.",
   ].join("\n\n");
   const marginalPhrases = analysis.mood
     .map((word) => word.replace(/[-_]+/g, " ").trim())
@@ -162,7 +156,7 @@ export function compileNativeGenerationPlan(
       protectedCenterDiameterRatio: 0.3,
       outerCircleDiameterRatio: 0.96,
       heroLetteringReserved: request.compositionMode === "text_led",
-      heroLetteringCorridor: request.compositionMode === "text_led" ? "lower-right curved arc" : "none",
+      heroLetteringCorridor: request.compositionMode === "text_led" ? "natural quiet pocket" : "none",
       heroMotifMaxCount: 1,
       asymmetry: "strong",
     },
@@ -173,8 +167,8 @@ export function compileNativeGenerationPlan(
       glow: "none",
     },
     avoid: [
-      "letters", "words", "numbers", "logos", "watermarks", "chalk", "wax crayon", "smooth vector",
-      "cyberpunk HUD", "sticker-pack layout", "even radial spacing", ...analysis.avoidMotifs,
+      "readable text", "polished scenic illustration", "neat radial wreath", "sticker-pack layout",
+      "smooth vector look", "digital neon or HUD look", ...analysis.avoidMotifs,
     ],
     compiledPrompt,
   };
@@ -210,11 +204,11 @@ export function assertNativePromptPrivacy(plan: NativeGenerationPlan, request: A
   for (const value of forbiddenValues) {
     if (prompt.includes(value)) throw new StudioProtocolError("Native image-generation prompt contains application-owned text.");
   }
-  if (!/no photo, portrait, reproduced source image/i.test(prompt) || !/no .*words, letters, numbers/i.test(prompt)) {
+  if (!/transparent .*paint-marker marks/i.test(prompt) || !/no readable or pseudo-readable text/i.test(prompt)) {
     throw new StudioProtocolError("Native image-generation prompt is missing required image/text prohibitions.");
   }
-  if (plan.compositionMode === "text_led" && (!plan.layout.heroLetteringReserved || !/hero-lettering corridor/i.test(prompt))) {
-    throw new StudioProtocolError("TEXT-LED plan must reserve an application-owned lettering corridor.");
+  if (plan.compositionMode === "text_led" && (!plan.layout.heroLetteringReserved || !/naturally quieter pocket/i.test(prompt))) {
+    throw new StudioProtocolError("TEXT-LED plan must reserve a natural pocket for application-owned lettering.");
   }
 }
 

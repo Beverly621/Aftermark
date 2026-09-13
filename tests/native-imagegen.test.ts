@@ -51,14 +51,19 @@ test("compiles distinct text-led and motif-led outer-art plans with no literal a
   assert.equal(textLed.outputIntent.finalUse, "overlay_on_vinyl");
   assert.equal(textLed.outputIntent.text, "none");
   assert.equal(textLed.layout.heroLetteringReserved, true);
+  assert.equal(textLed.layout.heroLetteringCorridor, "natural quiet pocket");
   assert.equal(motifLed.layout.heroLetteringReserved, false);
-  assert.match(textLed.compiledPrompt, /hero-lettering corridor/i);
-  assert.match(motifLed.compiledPrompt, /one source-derived thematic motif/i);
+  assert.match(textLed.compiledPrompt, /naturally quieter pocket/i);
+  assert.doesNotMatch(textLed.compiledPrompt, /lower-right|30%|96%|4–7|10–18|65%|25%|10%/i);
+  assert.match(motifLed.compiledPrompt, /source-inspired doodles and gestures lead naturally/i);
+  assert.match(textLed.compiledPrompt, /rather than neatly arranged/i);
+  assert.match(textLed.compiledPrompt, /no readable or pseudo-readable text/i);
   assert.notEqual(textLed.compiledPrompt, motifLed.compiledPrompt);
   assert.equal(textLed.compiledPrompt.includes(request.userMessage), false);
   assert.equal(textLed.compiledPrompt.includes(request.createdAt), false);
   assert.equal(textLed.compiledPrompt.includes(request.sessionId), false);
   assert.doesNotThrow(() => assertNativePromptPrivacy(textLed, request));
+  assert.ok(textLed.compiledPrompt.length < 1_500);
 });
 
 test("source analysis schema rejects unsupported or unconstrained input", () => {

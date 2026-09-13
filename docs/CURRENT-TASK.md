@@ -4,9 +4,8 @@ Current state:
 
 - The Skill runtime works.
 - Codex-native image generation works.
-- Documentation consolidation is awaiting human review.
+- Repository documentation is consolidated.
 
-Next product work is visual-quality tuning. Its implementation scope has not been defined and must not begin as part of this cleanup.
+Current objective: replace the engineering-heavy Neon Scribble image-generation prompt with a concise creative brief, then compare one coastal TEXT-LED result and one coastal MOTIF-LED result.
 
 Update this file for future normal task objectives instead of adding `CODEX_TASK_*.md`, `PHASE*.md`, progress, or completion files.
-
